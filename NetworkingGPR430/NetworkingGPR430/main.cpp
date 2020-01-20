@@ -8,9 +8,6 @@
 #include "RakNet/BitStream.h"
 #include "RakNet/RakNetTypes.h"
 
-unsigned int maxClients = 10;
-unsigned short serverPort = 60000;
-
 enum GameMessages
 {
 	ID_GAME_MESSAGE_1 = ID_USER_PACKET_ENUM + 1
@@ -22,7 +19,21 @@ int main(void)
 	RakNet::RakPeerInterface* peer = RakNet::RakPeerInterface::GetInstance();
 	RakNet::Packet* packet;
 	bool isServer;
+	unsigned int maxClients;
+	unsigned short serverPort;
 
+	// initialize server port
+	printf("Enter server port number or hit enter for 60000\n");
+	fgets(str, 512, stdin);
+	if (str[1] == 0) // str[0] is '\n' with fgets
+	{
+		serverPort = 60000;
+	}
+	else
+	{
+		serverPort = short(atoi(str));
+	}
+	
 	printf("(C) or (S)erver?\n");
 	fgets(str, 512, stdin);
 	if ((str[0] == 'c') || (str[0] == 'C'))
@@ -32,7 +43,20 @@ int main(void)
 		isServer = false;
 	}
 	else {
-		RakNet::SocketDescriptor sd(serverPort, 0);
+
+		// initialize max clients
+		printf("Enter max clients or hit enter for 10\n");
+		fgets(str, 512, stdin);
+		if (str[1] == 0)
+		{
+			maxClients = 10;
+		}
+		else
+		{
+			maxClients = unsigned(atoi(str));
+		}
+		
+		RakNet::SocketDescriptor sd(serverPort, "127.0.0.1"); // changed server address to localhost
 		peer->Startup(maxClients, &sd, 1);
 		isServer = true;
 	}
@@ -48,8 +72,8 @@ int main(void)
 	else 
 	{
 		printf("Enter server IP or hit enter for 127.0.0.1\n");
-		gets(str);
-		if (str[0] == 0) {
+		fgets(str, 512, stdin);
+		if (str[1] == 0) {
 			strcpy(str, "127.0.0.1");
 		}
 		printf("Starting the client.\n");
