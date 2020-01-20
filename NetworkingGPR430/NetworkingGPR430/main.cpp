@@ -71,7 +71,12 @@ int main(void)
 			maxClients = unsigned(atoi(str));
 		}
 
-		RakNet::SocketDescriptor sd(serverPort, "127.0.0.1"); // changed server address to localhost
+		printf("Enter server IP or hit enter for 127.0.0.1\n");
+		fgets(str, 512, stdin);
+		if (str[1] == 0) {
+			strcpy(str, "127.0.0.1");
+		}
+		RakNet::SocketDescriptor sd(serverPort, str); // changed server address to localhost
 		peer->Startup(maxClients, &sd, 1);
 		isServer = true;
 	}
