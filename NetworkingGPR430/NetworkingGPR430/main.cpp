@@ -14,7 +14,7 @@ struct MessagePacket
 {
 	unsigned char typeId; // Your type here
 	// Your data here
-	const char* message;
+	char message[511];
 	RakNet::NetworkID networkId; // NetworkID of the mine, used as a common method to refer to the mine on different computers
 	RakNet::SystemAddress systemAddress; // The SystenAddress of the player that owns the mine
 };
