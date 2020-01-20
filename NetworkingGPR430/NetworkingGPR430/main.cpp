@@ -15,8 +15,6 @@ struct MessagePacket
 	unsigned char typeId; // Your type here
 	// Your data here
 	char message[511];
-	RakNet::NetworkID networkId; // NetworkID of the mine, used as a common method to refer to the mine on different computers
-	RakNet::SystemAddress systemAddress; // The SystenAddress of the player that owns the mine
 };
 #pragma pack(pop)
 
@@ -121,7 +119,7 @@ int main(void)
 				peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);*/
 				MessagePacket welcomeMessage = MessagePacket
 				{
-					CLIENT_WELCOME_MESSAGE, "Welcome - Sincerely, Client", 0, packet->systemAddress
+					CLIENT_WELCOME_MESSAGE, "Welcome - Sincerely, Client"
 				};
 				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 				printf("Another client has connected.\n");
@@ -135,7 +133,7 @@ int main(void)
 				// Bitstreams are easier to use than sending casted structures, and handle endian swapping automatically
 				MessagePacket welcomeMessage = MessagePacket
 				{
-					CLIENT_HELLO_MESSAGE, "Ben and Adam's Client Hello Message", 0, packet->systemAddress
+					CLIENT_HELLO_MESSAGE, "Ben and Adam's Client Hello Message"
 				};
 				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 			}
@@ -144,7 +142,7 @@ int main(void)
 			{
 				MessagePacket welcomeMessage = MessagePacket
 				{
-					SERVER_WELCOME_MESSAGE, "Welcome - Love, Server", 0, packet->systemAddress
+					SERVER_WELCOME_MESSAGE, "Welcome - Love, Server"
 				};
 					// send message packet struct pointer as char*
 				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
