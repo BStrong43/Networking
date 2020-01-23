@@ -8,19 +8,38 @@
 #include "RakNet/BitStream.h"
 #include "RakNet/RakNetTypes.h"
 
+#define USERNAME_MAX_LENGTH 16
+#define MESSAGE_MAX_LENGTH 512
+
 // memory aligned message packet
 #pragma pack(push, 1)
-struct MessagePacket
+struct MessageRequestPacket
 {
 	unsigned char typeId; // Your type here
+	char receiverUsername[USERNAME_MAX_LENGTH];
 	// Your data here
-	char message[511];
+	char message[MESSAGE_MAX_LENGTH];
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct MessageReceivePacket
+{
+	unsigned char typeId; // Your type here
+	char senderUsername[USERNAME_MAX_LENGTH];
+	// broadcast or private
+	bool isBroadcast;
+	// Your data here
+	char message[MESSAGE_MAX_LENGTH];
 };
 #pragma pack(pop)
 
 enum GameMessages
 {
 	CUSTOM_GAME_MESSAGE = ID_USER_PACKET_ENUM + 1,
+	SEND_PRIVATE_MESSAGE,
+	SEND_BROADCAST_MESSAGE,
+	RECEIVE_MESSAGE
 };
 
 int main(void)
@@ -39,7 +58,7 @@ int main(void)
 	if (ipAddress[0] == '\n') {
 		strcpy(ipAddress, "127.0.0.1");
 	}
-	
+
 	// initialize server port
 	printf("Enter server port number or hit enter for 60000\n");
 	fgets(str, 512, stdin);
@@ -150,12 +169,19 @@ int main(void)
 				}
 				break;
 
-			case CUSTOM_GAME_MESSAGE:
+			case RECEIVE_MESSAGE:
 			{
 				// cast packet data char* to MessagePacket*
-				MessagePacket* messagePacket = (MessagePacket*)packet->data;
+				MessageReceivePacket* messagePacket = (MessageReceivePacket*)packet->data;
 				// print message
-				printf("%s\n", messagePacket->message);
+				if (messagePacket->isBroadcast)
+				{
+					printf("%s broadcast: %s\n", messagePacket->senderUsername, messagePacket->message);
+				}
+				else
+				{
+					printf("%s private: %s\n", messagePacket->senderUsername, messagePacket->message);
+				}
 			}
 			break;
 			default:
