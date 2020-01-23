@@ -20,10 +20,7 @@ struct MessagePacket
 
 enum GameMessages
 {
-	CLIENT_HELLO_MESSAGE = ID_USER_PACKET_ENUM + 1,
-	SERVER_WELCOME_MESSAGE,
-	CLIENT_WELCOME_MESSAGE,
-	COUNT_MESSAGE
+	CUSTOM_GAME_MESSAGE = ID_USER_PACKET_ENUM + 1,
 };
 
 int main(void)
@@ -34,11 +31,19 @@ int main(void)
 	bool isServer;
 	unsigned int maxClients;
 	unsigned short serverPort;
+	char ipAddress[512];
 
+	// initialize ip address
+	printf("Enter server IP or hit enter for 127.0.0.1\n");
+	fgets(ipAddress, 512, stdin);
+	if (ipAddress[0] == '\n') {
+		strcpy(ipAddress, "127.0.0.1");
+	}
+	
 	// initialize server port
 	printf("Enter server port number or hit enter for 60000\n");
 	fgets(str, 512, stdin);
-	if (str[1] == 0) // str[0] is '\n' with fgets
+	if (str[0] == '\n') // str[0] is '\n' with fgets
 	{
 		serverPort = 60000;
 	}
@@ -55,12 +60,13 @@ int main(void)
 		peer->Startup(1, &sd, 1);
 		isServer = false;
 	}
-	else {
+	else
+	{
 
 		// initialize max clients
 		printf("Enter max clients or hit enter for 10\n");
 		fgets(str, 512, stdin);
-		if (str[1] == 0)
+		if (str[0] == '\n')
 		{
 			maxClients = 10;
 		}
@@ -69,12 +75,7 @@ int main(void)
 			maxClients = unsigned(atoi(str));
 		}
 
-		printf("Enter server IP or hit enter for 127.0.0.1\n");
-		fgets(str, 512, stdin);
-		if (str[1] == 0) {
-			strcpy(str, "127.0.0.1");
-		}
-		RakNet::SocketDescriptor sd(serverPort, str); // changed server address to localhost
+		RakNet::SocketDescriptor sd(serverPort, ipAddress); // changed server address to localhost
 		peer->Startup(maxClients, &sd, 1);
 		isServer = true;
 	}
@@ -89,17 +90,20 @@ int main(void)
 	}
 	else
 	{
-		printf("Enter server IP or hit enter for 127.0.0.1\n");
-		fgets(str, 512, stdin);
-		if (str[1] == 0) {
-			strcpy(str, "127.0.0.1");
-		}
 		printf("Starting the client.\n");
-		peer->Connect(str, serverPort, 0, 0);
+		peer->Connect(ipAddress, serverPort, 0, 0);
 	}
 
 	while (1)
 	{
+		// MessagePacket welcomeMessage = MessagePacket
+		// {
+		// 	SERVER_WELCOME_MESSAGE, "Welcome - Love, Server"
+		// };
+		// // send message packet struct pointer as char*
+		// peer->Send((char*)&welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+
+
 		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			switch (packet->data[0])
@@ -113,39 +117,16 @@ int main(void)
 				break;
 			case ID_REMOTE_NEW_INCOMING_CONNECTION:
 			{
-				/*RakNet::BitStream bsOut;
-				bsOut.Write(RakNet::MessageID(CLIENT_WELCOME_MESSAGE));
-				bsOut.Write("Welcome - Sincerely, Client");
-				peer->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);*/
-				MessagePacket welcomeMessage = MessagePacket
-				{
-					CLIENT_WELCOME_MESSAGE, "Welcome - Sincerely, Client"
-				};
-				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 				printf("Another client has connected.\n");
 			}
 			break;
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 			{
 				printf("Our connection request has been accepted.\n");
-
-				// Use a BitStream to write a custom user message
-				// Bitstreams are easier to use than sending casted structures, and handle endian swapping automatically
-				MessagePacket welcomeMessage = MessagePacket
-				{
-					CLIENT_HELLO_MESSAGE, "Ben and Adam's Client Hello Message"
-				};
-				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 			}
 			break;
 			case ID_NEW_INCOMING_CONNECTION:
 			{
-				MessagePacket welcomeMessage = MessagePacket
-				{
-					SERVER_WELCOME_MESSAGE, "Welcome - Love, Server"
-				};
-					// send message packet struct pointer as char*
-				peer->Send((char*)& welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 				printf("A connection is incoming.\n");
 			}
 			break;
@@ -169,13 +150,11 @@ int main(void)
 				}
 				break;
 
-			case CLIENT_HELLO_MESSAGE:
-			case SERVER_WELCOME_MESSAGE:
-			case CLIENT_WELCOME_MESSAGE:
+			case CUSTOM_GAME_MESSAGE:
 			{
-					// cast packet data char* to MessagePacket*
+				// cast packet data char* to MessagePacket*
 				MessagePacket* messagePacket = (MessagePacket*)packet->data;
-					// print message
+				// print message
 				printf("%s\n", messagePacket->message);
 			}
 			break;
