@@ -21,6 +21,9 @@
     <ClCompile Include="KeyboardReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KeyboardReader.h">

@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="KeyboardReader.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="testMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KeyboardReader.h" />
