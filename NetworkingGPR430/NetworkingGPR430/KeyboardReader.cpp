@@ -29,11 +29,11 @@ std::string KeyboardReader::getPressedKeys()
 	return keysPressed;
 }
 
-std::string KeyboardReader::trimMessage(std::string msg, int snip = 1)
+std::string KeyboardReader::trimMessage(std::string msg, int snip)
 {
 	for (int i = 0; i < snip; i++)
 	{
-		msg = msg.pop_back;
+		msg.pop_back();
 	}
 	return msg;
 }
