@@ -51,7 +51,8 @@ int main(void)
 	unsigned int maxClients;
 	unsigned short serverPort;
 	char ipAddress[512];
-
+	char username[USERNAME_MAX_LENGTH];
+	
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
 	fgets(ipAddress, 512, stdin);
@@ -71,10 +72,17 @@ int main(void)
 		serverPort = short(atoi(str));
 	}
 
-	printf("(C) or (S)erver?\n");
+	printf("(P)articipent or (H)ost?\n");
 	fgets(str, 512, stdin);
-	if ((str[0] == 'c') || (str[0] == 'C'))
+	if ((str[0] == 'p') || (str[0] == 'P'))
 	{
+		// input username
+		printf("Enter user name (max length %i)\n", USERNAME_MAX_LENGTH);
+		fgets(username, USERNAME_MAX_LENGTH, stdin);
+		if (username[0] == '\n') {
+			strcpy(username, "NoName");
+		}
+		
 		RakNet::SocketDescriptor sd;
 		peer->Startup(1, &sd, 1);
 		isServer = false;
