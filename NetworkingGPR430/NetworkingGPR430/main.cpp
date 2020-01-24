@@ -108,6 +108,8 @@ int main(void)
 	}
 	else
 	{
+		// set username to "Host"
+		strcpy(username, "Host");
 
 		// initialize max clients
 		printf("Enter max clients or hit enter for 10\n");
@@ -197,8 +199,27 @@ int main(void)
 				ParticipantPort newParticipantPort = packet->systemAddress.GetPort();
 				// cast packet data char* to MessagePacket*
 				ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
+				// map participant port to their username
 				participantUsernames[newParticipantPort] = clientHelloPacket->username;
 				printf("%s has joined the chat!\n", clientHelloPacket->username);
+
+				// welcome client privately
+				MessageReceivePacket messageReceivePacket = MessageReceivePacket();
+				// sender is host
+				strcpy(messageReceivePacket.senderUsername, username);
+				// private message
+				messageReceivePacket.isBroadcast = false;
+				// "Welcome to the chat, username!"
+				char helloMessage[MESSAGE_MAX_LENGTH] = "Welcome to the chat, ";
+				strcat(helloMessage, clientHelloPacket->username);
+				strcat(helloMessage, "!");
+				strcpy(messageReceivePacket.message, helloMessage);
+				// copy message value into packet message value
+				strcpy(messageReceivePacket.senderUsername, username);
+				// send message packet struct pointer as char*
+				peer->Send((char*)& messageReceivePacket, sizeof(ClientHelloPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+
+				// TODO: broadcast client join to all but joined client
 			}
 			break;
 			case RECEIVE_MESSAGE:
@@ -208,11 +229,11 @@ int main(void)
 				// print message
 				if (messagePacket->isBroadcast)
 				{
-					printf("%s broadcast: %s\n", messagePacket->senderUsername, messagePacket->message);
+					printf("(broadcast) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
 				}
 				else
 				{
-					printf("%s private: %s\n", messagePacket->senderUsername, messagePacket->message);
+					printf("(private) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
 				}
 			}
 			break;
