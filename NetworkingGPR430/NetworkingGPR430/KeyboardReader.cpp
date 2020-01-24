@@ -17,7 +17,7 @@ std::string KeyboardReader::getPressedKeys()
 
 	for (char i = 'a'; i <= 'z'; ++i)
 	{
-		if (GetAsyncKeyState(i))
+		if (GetAsyncKeyState(i))// a-z
 		{
 			if (GetAsyncKeyState(16)) //Shift
 				keysPressed += toupper(i);
