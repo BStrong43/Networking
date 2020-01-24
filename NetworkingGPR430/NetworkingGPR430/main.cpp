@@ -11,8 +11,8 @@
 
 typedef unsigned short ParticipantPort;
 
-#define USERNAME_MAX_LENGTH 16
-#define MESSAGE_MAX_LENGTH 512
+#define USERNAME_MAX_LENGTH 15
+#define MESSAGE_MAX_LENGTH 400
 
 enum GameMessageId
 {
@@ -47,11 +47,11 @@ struct MessageRequestPacket
 struct MessageReceivePacket
 {
 	unsigned char typeId = RECEIVE_MESSAGE;
-	char senderUsername[USERNAME_MAX_LENGTH];
 	// broadcast or private
-	bool isBroadcast;
+	char senderUsername[USERNAME_MAX_LENGTH];
 	// Your data here
 	char message[MESSAGE_MAX_LENGTH];
+	bool isBroadcast;
 };
 #pragma pack(pop)
 
@@ -204,7 +204,13 @@ int main(void)
 				printf("%s has joined the chat!\n", clientHelloPacket->username);
 
 				// welcome client privately
-				MessageReceivePacket messageReceivePacket = MessageReceivePacket();
+				MessageReceivePacket messageReceivePacket = MessageReceivePacket
+				{
+					RECEIVE_MESSAGE,
+						"Host",
+						"Welcome",
+						false
+				};
 				// sender is host
 				strcpy(messageReceivePacket.senderUsername, username);
 				// private message
@@ -214,10 +220,8 @@ int main(void)
 				strcat(helloMessage, clientHelloPacket->username);
 				strcat(helloMessage, "!");
 				strcpy(messageReceivePacket.message, helloMessage);
-				// copy message value into packet message value
-				strcpy(messageReceivePacket.senderUsername, username);
 				// send message packet struct pointer as char*
-				peer->Send((char*)& messageReceivePacket, sizeof(ClientHelloPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+				peer->Send((char*)& messageReceivePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 
 				// TODO: broadcast client join to all but joined client
 			}
