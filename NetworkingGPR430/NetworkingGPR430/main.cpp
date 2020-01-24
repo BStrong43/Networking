@@ -55,6 +55,8 @@ struct MessageReceivePacket
 };
 #pragma pack(pop)
 
+//void hostBroadcast(ParticipantPort exceptParticipant, char message[MESSAGE_MAX_LENGTH]);
+
 int main(void)
 {
 	char str[512];
@@ -204,26 +206,31 @@ int main(void)
 				printf("%s has joined the chat!\n", clientHelloPacket->username);
 
 				// welcome client privately
-				MessageReceivePacket messageReceivePacket = MessageReceivePacket
-				{
-					RECEIVE_MESSAGE,
-						"Host",
-						"Welcome",
-						false
-				};
+				MessageReceivePacket welcomeMessagePacket = MessageReceivePacket();
 				// sender is host
-				strcpy(messageReceivePacket.senderUsername, username);
+				strcpy(welcomeMessagePacket.senderUsername, username);
 				// private message
-				messageReceivePacket.isBroadcast = false;
+				welcomeMessagePacket.isBroadcast = false;
 				// "Welcome to the chat, username!"
 				char helloMessage[MESSAGE_MAX_LENGTH] = "Welcome to the chat, ";
 				strcat(helloMessage, clientHelloPacket->username);
 				strcat(helloMessage, "!");
-				strcpy(messageReceivePacket.message, helloMessage);
+				strcpy(welcomeMessagePacket.message, helloMessage);
 				// send message packet struct pointer as char*
-				peer->Send((char*)& messageReceivePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+				peer->Send((char*)& welcomeMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 
-				// TODO: broadcast client join to all but joined client
+				// broadcast client join to all but joined client
+				MessageReceivePacket participantJoinedMessagePacket = MessageReceivePacket();
+				// sender is host
+				strcpy(participantJoinedMessagePacket.senderUsername, username);
+				// broadcast
+				participantJoinedMessagePacket.isBroadcast = true;
+				// "username has joined the chat!"
+				char participantJoinedBroadcastMessage[MESSAGE_MAX_LENGTH];
+				strcpy(participantJoinedBroadcastMessage, clientHelloPacket->username);
+				strcat(participantJoinedBroadcastMessage, " has joined the chat!");
+				strcpy(participantJoinedMessagePacket.message, participantJoinedBroadcastMessage);
+				peer->Send((char*)& participantJoinedMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
 			}
 			break;
 			case RECEIVE_MESSAGE:
@@ -252,3 +259,15 @@ int main(void)
 
 	return 0;
 }
+
+// void hostBroadcast(ParticipantPort exceptParticipant, char message[MESSAGE_MAX_LENGTH])
+// {
+// 	MessageReceivePacket clientJoinedMessagePacket = MessageReceivePacket();
+// 	// sender is host
+// 	strcpy(clientJoinedMessagePacket.senderUsername, username);
+// 	clientJoinedMessagePacket.isBroadcast = true;
+// 	for (int i = 0; i < participantUsernames.size(); i++)
+// 	{
+//
+// 	}
+// }
