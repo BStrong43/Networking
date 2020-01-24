@@ -197,6 +197,7 @@ int main(void)
 			{
 				// cast packet data char* to MessagePacket*
 				ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
+				// TODO: check for duplicate username??
 				// map participant username to their system address
 				participantSystemAddresses[clientHelloPacket->username] = packet->systemAddress;
 				printf("%s has joined the chat!\n", clientHelloPacket->username);
@@ -248,6 +249,8 @@ int main(void)
 					RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestPrivateMessagePacket->receiverUsername];
 					// send to receiver
 					peer->Send((char*)& receivePrivateMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
+
+					printf("(private) %s to %s: %s\n", receivePrivateMessagePacket.senderUsername, requestPrivateMessagePacket->receiverUsername, receivePrivateMessagePacket.message);
 				}
 			}
 			break;
@@ -258,15 +261,17 @@ int main(void)
 				// verify requester is who they say they are
 				if (packet->systemAddress == participantSystemAddresses[requestBroadcastMessagePacket->requesterUsername])
 				{
-					MessageReceivePacket receivePrivateMessagePacket = MessageReceivePacket();
+					MessageReceivePacket receiveBroadcastMessagePacket = MessageReceivePacket();
 					// broadcast
-					receivePrivateMessagePacket.isBroadcast = true;
+					receiveBroadcastMessagePacket.isBroadcast = true;
 					// sender is requester
-					strcpy(receivePrivateMessagePacket.senderUsername, requestBroadcastMessagePacket->requesterUsername);
+					strcpy(receiveBroadcastMessagePacket.senderUsername, requestBroadcastMessagePacket->requesterUsername);
 					// copy over message
-					strcpy(receivePrivateMessagePacket.message, requestBroadcastMessagePacket->message);
+					strcpy(receiveBroadcastMessagePacket.message, requestBroadcastMessagePacket->message);
 					// broadcast to all but sender
-					peer->Send((char*)& receivePrivateMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+					peer->Send((char*)& receiveBroadcastMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+
+					printf("(broadcast) %s: %s\n", receiveBroadcastMessagePacket.senderUsername, receiveBroadcastMessagePacket.message);
 				}
 			}
 			break;
