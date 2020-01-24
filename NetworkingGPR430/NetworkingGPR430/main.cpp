@@ -9,8 +9,6 @@
 #include "RakNet/RakNetTypes.h"
 #include <unordered_map>
 
-typedef unsigned short ParticipantPort;
-
 #define USERNAME_MAX_LENGTH 15
 #define MESSAGE_MAX_LENGTH 400
 
@@ -37,6 +35,7 @@ struct ClientHelloPacket
 struct MessageRequestPacket
 {
 	unsigned char typeId;
+	char requesterUsername[USERNAME_MAX_LENGTH];
 	char receiverUsername[USERNAME_MAX_LENGTH];
 	// Your data here
 	char message[MESSAGE_MAX_LENGTH];
@@ -55,8 +54,6 @@ struct MessageReceivePacket
 };
 #pragma pack(pop)
 
-//void hostBroadcast(ParticipantPort exceptParticipant, char message[MESSAGE_MAX_LENGTH]);
-
 int main(void)
 {
 	char str[512];
@@ -67,7 +64,7 @@ int main(void)
 	unsigned short serverPort;
 	char ipAddress[512];
 	char username[USERNAME_MAX_LENGTH];
-	std::unordered_map<ParticipantPort, char*> participantUsernames;
+	std::unordered_map<char[USERNAME_MAX_LENGTH], RakNet::SystemAddress> participantSystemAddresses;
 
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
@@ -198,11 +195,10 @@ int main(void)
 				break;
 			case CLIENT_HELLO_MESSAGE:
 			{
-				ParticipantPort newParticipantPort = packet->systemAddress.GetPort();
 				// cast packet data char* to MessagePacket*
 				ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
-				// map participant port to their username
-				participantUsernames[newParticipantPort] = clientHelloPacket->username;
+				// map participant username to their system address
+				participantSystemAddresses[clientHelloPacket->username] = packet->systemAddress;
 				printf("%s has joined the chat!\n", clientHelloPacket->username);
 
 				// welcome client privately
@@ -230,7 +226,48 @@ int main(void)
 				strcpy(participantJoinedBroadcastMessage, clientHelloPacket->username);
 				strcat(participantJoinedBroadcastMessage, " has joined the chat!");
 				strcpy(participantJoinedMessagePacket.message, participantJoinedBroadcastMessage);
+				// broadcast to all but new participant
 				peer->Send((char*)& participantJoinedMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
+			}
+			break;
+			case SEND_PRIVATE_MESSAGE:
+			{
+				MessageRequestPacket* requestPrivateMessagePacket = (MessageRequestPacket*)packet->data;
+
+				// verify requester is who they say they are
+				if (packet->systemAddress == participantSystemAddresses[requestPrivateMessagePacket->requesterUsername])
+				{
+					MessageReceivePacket receivePrivateMessagePacket = MessageReceivePacket();
+					// private
+					receivePrivateMessagePacket.isBroadcast = false;
+					// sender is requester
+					strcpy(receivePrivateMessagePacket.senderUsername, requestPrivateMessagePacket->requesterUsername);
+					// copy over message
+					strcpy(receivePrivateMessagePacket.message, requestPrivateMessagePacket->message);
+					// get receiver system address by requested receiver username
+					RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestPrivateMessagePacket->receiverUsername];
+					// send to receiver
+					peer->Send((char*)& receivePrivateMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
+				}
+			}
+			break;
+			case SEND_BROADCAST_MESSAGE:
+			{
+				MessageRequestPacket* requestBroadcastMessagePacket = (MessageRequestPacket*)packet->data;
+
+				// verify requester is who they say they are
+				if (packet->systemAddress == participantSystemAddresses[requestBroadcastMessagePacket->requesterUsername])
+				{
+					MessageReceivePacket receivePrivateMessagePacket = MessageReceivePacket();
+					// broadcast
+					receivePrivateMessagePacket.isBroadcast = true;
+					// sender is requester
+					strcpy(receivePrivateMessagePacket.senderUsername, requestBroadcastMessagePacket->requesterUsername);
+					// copy over message
+					strcpy(receivePrivateMessagePacket.message, requestBroadcastMessagePacket->message);
+					// broadcast to all but sender
+					peer->Send((char*)& receivePrivateMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+				}
 			}
 			break;
 			case RECEIVE_MESSAGE:
@@ -259,15 +296,3 @@ int main(void)
 
 	return 0;
 }
-
-// void hostBroadcast(ParticipantPort exceptParticipant, char message[MESSAGE_MAX_LENGTH])
-// {
-// 	MessageReceivePacket clientJoinedMessagePacket = MessageReceivePacket();
-// 	// sender is host
-// 	strcpy(clientJoinedMessagePacket.senderUsername, username);
-// 	clientJoinedMessagePacket.isBroadcast = true;
-// 	for (int i = 0; i < participantUsernames.size(); i++)
-// 	{
-//
-// 	}
-// }
