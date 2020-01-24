@@ -7,15 +7,36 @@
 #include "RakNet/MessageIdentifiers.h"
 #include "RakNet/BitStream.h"
 #include "RakNet/RakNetTypes.h"
+#include <unordered_map>
+
+typedef unsigned short ParticipantPort;
 
 #define USERNAME_MAX_LENGTH 16
 #define MESSAGE_MAX_LENGTH 512
+
+enum GameMessageId
+{
+	CUSTOM_GAME_MESSAGE = ID_USER_PACKET_ENUM + 1,
+	CLIENT_HELLO_MESSAGE,
+	SEND_PRIVATE_MESSAGE,
+	SEND_BROADCAST_MESSAGE,
+	RECEIVE_MESSAGE
+};
+
+// memory aligned message packet
+#pragma pack(push, 1)
+struct ClientHelloPacket
+{
+	unsigned char typeId = CLIENT_HELLO_MESSAGE;
+	char username[USERNAME_MAX_LENGTH];
+};
+#pragma pack(pop)
 
 // memory aligned message packet
 #pragma pack(push, 1)
 struct MessageRequestPacket
 {
-	unsigned char typeId; // Your type here
+	unsigned char typeId;
 	char receiverUsername[USERNAME_MAX_LENGTH];
 	// Your data here
 	char message[MESSAGE_MAX_LENGTH];
@@ -25,7 +46,7 @@ struct MessageRequestPacket
 #pragma pack(push, 1)
 struct MessageReceivePacket
 {
-	unsigned char typeId; // Your type here
+	unsigned char typeId = RECEIVE_MESSAGE;
 	char senderUsername[USERNAME_MAX_LENGTH];
 	// broadcast or private
 	bool isBroadcast;
@@ -33,14 +54,6 @@ struct MessageReceivePacket
 	char message[MESSAGE_MAX_LENGTH];
 };
 #pragma pack(pop)
-
-enum GameMessages
-{
-	CUSTOM_GAME_MESSAGE = ID_USER_PACKET_ENUM + 1,
-	SEND_PRIVATE_MESSAGE,
-	SEND_BROADCAST_MESSAGE,
-	RECEIVE_MESSAGE
-};
 
 int main(void)
 {
@@ -52,7 +65,8 @@ int main(void)
 	unsigned short serverPort;
 	char ipAddress[512];
 	char username[USERNAME_MAX_LENGTH];
-	
+	std::unordered_map<ParticipantPort, char*> participantUsernames;
+
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
 	fgets(ipAddress, 512, stdin);
@@ -74,7 +88,7 @@ int main(void)
 
 	printf("(P)articipent or (H)ost?\n");
 	fgets(str, 512, stdin);
-	if ((str[0] == 'p') || (str[0] == 'P'))
+	if (str[0] == 'p' || str[0] == 'P')
 	{
 		// input username
 		printf("Enter user name (max length %i)\n", USERNAME_MAX_LENGTH);
@@ -82,7 +96,12 @@ int main(void)
 		if (username[0] == '\n') {
 			strcpy(username, "NoName");
 		}
-		
+		else
+		{
+			// remove \n from end of fgets input //https://stackoverflow.com/questions/2693776/removing-trailing-newline-character-from-fgets-input
+			strtok(username, "\n");
+		}
+
 		RakNet::SocketDescriptor sd;
 		peer->Startup(1, &sd, 1);
 		isServer = false;
@@ -123,14 +142,6 @@ int main(void)
 
 	while (1)
 	{
-		// MessagePacket welcomeMessage = MessagePacket
-		// {
-		// 	SERVER_WELCOME_MESSAGE, "Welcome - Love, Server"
-		// };
-		// // send message packet struct pointer as char*
-		// peer->Send((char*)&welcomeMessage, sizeof(MessagePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
-
-
 		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			switch (packet->data[0])
@@ -150,6 +161,11 @@ int main(void)
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 			{
 				printf("Our connection request has been accepted.\n");
+				ClientHelloPacket helloMessage = ClientHelloPacket();
+				// copy username value into hellomessage value
+				strcpy(helloMessage.username, username);
+				// send message packet struct pointer as char*
+				peer->Send((char*)& helloMessage, sizeof(ClientHelloPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
 			}
 			break;
 			case ID_NEW_INCOMING_CONNECTION:
@@ -176,7 +192,15 @@ int main(void)
 					printf("Connection lost.\n");
 				}
 				break;
-
+			case CLIENT_HELLO_MESSAGE:
+			{
+				ParticipantPort newParticipantPort = packet->systemAddress.GetPort();
+				// cast packet data char* to MessagePacket*
+				ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
+				participantUsernames[newParticipantPort] = clientHelloPacket->username;
+				printf("%s has joined the chat!\n", clientHelloPacket->username);
+			}
+			break;
 			case RECEIVE_MESSAGE:
 			{
 				// cast packet data char* to MessagePacket*
