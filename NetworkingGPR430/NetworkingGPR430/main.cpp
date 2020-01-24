@@ -128,7 +128,6 @@ int main(void)
 	}
 
 
-	// TODO - Add code body here
 	if (isServer)
 	{
 		//Set up server things
@@ -143,6 +142,12 @@ int main(void)
 
 	while (1)
 	{
+		// TODO: On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
+		// TODO: Participant request private message
+		// // how to get server's system adress as a client??
+		// TODO: Participant request broadcast message
+		// TODO: client leave chat gracefully
+		
 		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			switch (packet->data[0])
