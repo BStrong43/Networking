@@ -64,7 +64,7 @@ int main(void)
 	unsigned short serverPort;
 	char ipAddress[512];
 	char username[USERNAME_MAX_LENGTH];
-	std::unordered_map<char[USERNAME_MAX_LENGTH], RakNet::SystemAddress> participantSystemAddresses;
+	std::unordered_map<char*, RakNet::SystemAddress> participantSystemAddresses;
 
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
