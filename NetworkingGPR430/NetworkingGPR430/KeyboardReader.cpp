@@ -36,6 +36,7 @@ std::string KeyboardReader::trimMessage(std::string msg, int snip)
 	for (int i = 0; i < snip; i++)
 	{
 		msg.pop_back();
+		msg.shrink_to_fit();
 	}
 	return msg;
 }
