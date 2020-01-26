@@ -69,6 +69,7 @@ int main(void)
 	RakNet::SystemAddress serverSystemAddress;
 	const char BROADCAST_KEYWORD[USERNAME_MAX_LENGTH] = "BROADCAST";
 	bool messageTest = false;
+	bool printTest = false;
 
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
@@ -149,7 +150,19 @@ int main(void)
 	
 	while (1)
 	{
-		// TODO: On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
+		// On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
+		if(isServer && !printTest && !!(GetAsyncKeyState('W') & 0x8000))
+		{
+			printTest = true;
+
+			printf("\nUsername : IP\n");
+			for (std::pair<const std::basic_string<char>, RakNet::SystemAddress> participant : participantSystemAddresses)
+			{
+				printf("%s : %s\n", participant.first.c_str(), participant.second.ToString());
+			}
+			printf("\n");
+		}
+		// message request
 		if (username[0] == 'A' && !messageTest && !!(GetAsyncKeyState('Q') & 0x8000))
 		{
 			messageTest = true;
