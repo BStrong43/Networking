@@ -64,7 +64,11 @@ int main(void)
 	unsigned short serverPort;
 	char ipAddress[512];
 	char username[USERNAME_MAX_LENGTH];
-	std::unordered_map<char*, RakNet::SystemAddress> participantSystemAddresses;
+	// map from usernames to system addresses, maintained by server
+	std::unordered_map<std::string, RakNet::SystemAddress> participantSystemAddresses;
+	// store server system address to request messages
+	RakNet::SystemAddress serverSystemAddress;
+	bool test = false;
 
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
@@ -140,14 +144,37 @@ int main(void)
 		peer->Connect(ipAddress, serverPort, 0, 0);
 	}
 
+	// save server system adress for requesting messages
+	serverSystemAddress = peer->GetSystemAddressFromIndex(0);
+	
 	while (1)
 	{
 		// TODO: On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
 		// TODO: Participant request private message
 		// // how to get server's system adress as a client??
+		if (username[0] == 'A' && !test && !!(GetAsyncKeyState('Q') & 0x8000))
+		{
+			test = true;
+			char receiverUsername[USERNAME_MAX_LENGTH] = "bob";
+			char privateMessage[MESSAGE_MAX_LENGTH] = "Sup";
+
+			MessageRequestPacket privateMessageRequestPacket = MessageRequestPacket();
+			// private
+			privateMessageRequestPacket.typeId = SEND_PRIVATE_MESSAGE;
+			// requester is me
+			strcpy(privateMessageRequestPacket.requesterUsername, username);
+			// to input receiver
+			strcpy(privateMessageRequestPacket.receiverUsername, receiverUsername);
+			// input message
+			strcpy(privateMessageRequestPacket.message, privateMessage);
+			// sender to server for routing
+			peer->Send((char*)& privateMessageRequestPacket, sizeof(MessageRequestPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
+
+			printf("Sending private message to %s: %s\n", receiverUsername, privateMessage);
+		}
 		// TODO: Participant request broadcast message
 		// TODO: client leave chat gracefully
-		
+
 		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 		{
 			switch (packet->data[0])
@@ -167,6 +194,9 @@ int main(void)
 			case ID_CONNECTION_REQUEST_ACCEPTED:
 			{
 				printf("Our connection request has been accepted.\n");
+
+				serverSystemAddress = packet->systemAddress;
+
 				ClientHelloPacket helloMessage = ClientHelloPacket();
 				// copy username value into hellomessage value
 				strcpy(helloMessage.username, username);
@@ -238,6 +268,9 @@ int main(void)
 			break;
 			case SEND_PRIVATE_MESSAGE:
 			{
+				// only server can route messages
+				if (!isServer) break;
+
 				MessageRequestPacket* requestPrivateMessagePacket = (MessageRequestPacket*)packet->data;
 
 				// verify requester is who they say they are
@@ -261,6 +294,9 @@ int main(void)
 			break;
 			case SEND_BROADCAST_MESSAGE:
 			{
+				// only server can route messages
+				if (!isServer) break;
+
 				MessageRequestPacket* requestBroadcastMessagePacket = (MessageRequestPacket*)packet->data;
 
 				// verify requester is who they say they are
