@@ -63,290 +63,310 @@ int main(void)
 	unsigned short serverPort;
 	char ipAddress[512];
 	char username[USERNAME_MAX_LENGTH];
+	const char HOST_USERNAME[USERNAME_MAX_LENGTH] = "Host";
 	// map from usernames to system addresses, maintained by server
 	std::unordered_map<std::string, RakNet::SystemAddress> participantSystemAddresses;
 	// store server system address to request messages
 	RakNet::SystemAddress serverSystemAddress;
 	const char BROADCAST_KEYWORD[USERNAME_MAX_LENGTH] = "BROADCAST";
+	bool doNetworkLoop = true;
 	bool messageTest = false;
 	bool printTest = false;
+	bool exitTest = false;
 
-	// initialize ip address
-	printf("Enter server IP or hit enter for 127.0.0.1\n");
-	fgets(ipAddress, 512, stdin);
-	if (ipAddress[0] == '\n') {
-		strcpy(ipAddress, "127.0.0.1");
-	}
-
-	// initialize server port
-	printf("Enter server port number or hit enter for 60000\n");
-	fgets(str, 512, stdin);
-	if (str[0] == '\n') // str[0] is '\n' with fgets
-	{
-		serverPort = 60000;
-	}
-	else
-	{
-		serverPort = short(atoi(str));
-	}
-
-	printf("(P)articipent or (H)ost?\n");
-	fgets(str, 512, stdin);
-	if (str[0] == 'p' || str[0] == 'P')
-	{
-		// input username
-		printf("Enter user name (max length %i)\n", USERNAME_MAX_LENGTH);
-		fgets(username, USERNAME_MAX_LENGTH, stdin);
-		if (username[0] == '\n') {
-			strcpy(username, "NoName");
-		}
-		else
-		{
-			// remove \n from end of fgets input //https://stackoverflow.com/questions/2693776/removing-trailing-newline-character-from-fgets-input
-			strtok(username, "\n");
-		}
-
-		RakNet::SocketDescriptor sd;
-		peer->Startup(1, &sd, 1);
-		isServer = false;
-	}
-	else
-	{
-		// set username to "Host"
-		strcpy(username, "Host");
-
-		// initialize max clients
-		printf("Enter max clients or hit enter for 10\n");
-		fgets(str, 512, stdin);
-		if (str[0] == '\n')
-		{
-			maxClients = 10;
-		}
-		else
-		{
-			maxClients = unsigned(atoi(str));
-		}
-
-		RakNet::SocketDescriptor sd(serverPort, ipAddress); // changed server address to localhost
-		peer->Startup(maxClients, &sd, 1);
-		isServer = true;
-	}
-
-
-	if (isServer)
-	{
-		//Set up server things
-		peer->SetMaximumIncomingConnections(maxClients);
-		std::cout << "Starting Server\n";
-	}
-	else
-	{
-		printf("Starting the client.\n");
-		peer->Connect(ipAddress, serverPort, 0, 0);
-	}
-
-	// save server system adress for requesting messages
-	serverSystemAddress = peer->GetSystemAddressFromIndex(0);
-	
+	// "Upon starting up the application or leaving a chat room, choose whether you want to host a new chat room or join a chat room"
+	// TODO: reconnection not working in this loop, need to do cleanup
 	while (1)
 	{
-		// On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
-		if(isServer && !printTest && !!(GetAsyncKeyState('W') & 0x8000))
-		{
-			printTest = true;
-
-			printf("\nUsername : IP\n");
-			for (std::pair<const std::basic_string<char>, RakNet::SystemAddress> participant : participantSystemAddresses)
-			{
-				printf("%s : %s\n", participant.first.c_str(), participant.second.ToString());
-			}
-			printf("\n");
+		// initialize ip address
+		printf("Enter server IP or hit enter for 127.0.0.1\n");
+		fgets(ipAddress, 512, stdin);
+		if (ipAddress[0] == '\n') {
+			strcpy(ipAddress, "127.0.0.1");
 		}
-		// message request
-		if (username[0] == 'A' && !messageTest && !!(GetAsyncKeyState('Q') & 0x8000))
+
+		// initialize server port
+		printf("Enter server port number or hit enter for 60000\n");
+		fgets(str, 512, stdin);
+		if (str[0] == '\n') // str[0] is '\n' with fgets
 		{
-			messageTest = true;
-			// printf("enter BROADCAST_KEYWORD in receiverUsername to broadcast")
-			// from instructions: "if the message is public (broadcast), use some recognizable keyword or symbol"
-			char receiverUsername[USERNAME_MAX_LENGTH] = "bob";
-			if (!!(GetAsyncKeyState('P') & 0x8000)) strcpy(receiverUsername, "bob");
-			else if (!!(GetAsyncKeyState('B') & 0x8000)) strcpy(receiverUsername, BROADCAST_KEYWORD);
-			char message[MESSAGE_MAX_LENGTH] = "Sup";
-
-			MessageRequestPacket privateMessageRequestPacket = MessageRequestPacket();
-			// private
-			privateMessageRequestPacket.typeId = REQUEST_MESSAGE;
-			// requester is me
-			strcpy(privateMessageRequestPacket.requesterUsername, username);
-			// to input receiver
-			strcpy(privateMessageRequestPacket.receiverUsername, receiverUsername);
-			// input message
-			strcpy(privateMessageRequestPacket.message, message);
-			// sender to server for routing
-			peer->Send((char*)& privateMessageRequestPacket, sizeof(MessageRequestPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
-
-			printf("Sending message to %s: %s\n", receiverUsername, message);
+			serverPort = 60000;
 		}
-		// TODO: client leave chat gracefully
-
-		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
+		else
 		{
-			switch (packet->data[0])
-			{
-				// remote nortifications not triggering
-			case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-				printf("Another client has disconnected.\n");
-				break;
-			case ID_REMOTE_CONNECTION_LOST:
-				printf("Another client has lost the connection.\n");
-				break;
-			case ID_REMOTE_NEW_INCOMING_CONNECTION:
-			{
-				printf("Another client has connected.\n");
+			serverPort = short(atoi(str));
+		}
+
+		printf("(P)articipent or (H)ost?\n");
+		fgets(str, 512, stdin);
+		if (str[0] == 'p' || str[0] == 'P')
+		{
+			// input username
+			printf("Enter user name (max length %i)\n", USERNAME_MAX_LENGTH);
+			fgets(username, USERNAME_MAX_LENGTH, stdin);
+			if (username[0] == '\n') {
+				strcpy(username, "NoName");
 			}
-			break;
-			case ID_CONNECTION_REQUEST_ACCEPTED:
+			else
 			{
-				printf("Our connection request has been accepted.\n");
-
-				serverSystemAddress = packet->systemAddress;
-
-				ClientHelloPacket helloMessage = ClientHelloPacket();
-				// copy username value into hellomessage value
-				strcpy(helloMessage.username, username);
-				// send message packet struct pointer as char*
-				peer->Send((char*)& helloMessage, sizeof(ClientHelloPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+				// remove \n from end of fgets input //https://stackoverflow.com/questions/2693776/removing-trailing-newline-character-from-fgets-input
+				strtok(username, "\n");
 			}
-			break;
-			case ID_NEW_INCOMING_CONNECTION:
+
+			RakNet::SocketDescriptor sd;
+			peer->Startup(1, &sd, 1);
+			isServer = false;
+		}
+		else
+		{
+			// set username to "Host"
+			strcpy(username, HOST_USERNAME);
+
+			// initialize max clients
+			printf("Enter max clients or hit enter for 10\n");
+			fgets(str, 512, stdin);
+			if (str[0] == '\n')
 			{
-				printf("A connection is incoming.\n");
+				maxClients = 10;
 			}
-			break;
-			case ID_NO_FREE_INCOMING_CONNECTIONS:
-				printf("The server is full.\n");
-				break;
-			case ID_DISCONNECTION_NOTIFICATION:
-				if (isServer) {
-					printf("A client has disconnected.\n");
-				}
-				else {
-					printf("We have been disconnected.\n");
-				}
-				break;
-			case ID_CONNECTION_LOST:
-				if (isServer) {
-					printf("A client lost the connection.\n");
-				}
-				else {
-					printf("Connection lost.\n");
-				}
-				break;
-			case CLIENT_HELLO_MESSAGE:
+			else
 			{
-				// cast packet data char* to MessagePacket*
-				ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
-				// TODO: check for duplicate username??
-				// map participant username to their system address
-				participantSystemAddresses[clientHelloPacket->username] = packet->systemAddress;
-				printf("%s has joined the chat!\n", clientHelloPacket->username);
-
-				// welcome client privately
-				MessageReceivePacket welcomeMessagePacket = MessageReceivePacket();
-				// sender is host
-				strcpy(welcomeMessagePacket.senderUsername, username);
-				// private message
-				welcomeMessagePacket.isBroadcast = false;
-				// "Welcome to the chat, username!"
-				char helloMessage[MESSAGE_MAX_LENGTH] = "Welcome to the chat, ";
-				strcat(helloMessage, clientHelloPacket->username);
-				strcat(helloMessage, "!");
-				strcpy(welcomeMessagePacket.message, helloMessage);
-				// send message packet struct pointer as char*
-				peer->Send((char*)& welcomeMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
-
-				// broadcast client join to all but joined client
-				MessageReceivePacket participantJoinedMessagePacket = MessageReceivePacket();
-				// sender is host
-				strcpy(participantJoinedMessagePacket.senderUsername, username);
-				// broadcast
-				participantJoinedMessagePacket.isBroadcast = true;
-				// "username has joined the chat!"
-				char participantJoinedBroadcastMessage[MESSAGE_MAX_LENGTH];
-				strcpy(participantJoinedBroadcastMessage, clientHelloPacket->username);
-				strcat(participantJoinedBroadcastMessage, " has joined the chat!");
-				strcpy(participantJoinedMessagePacket.message, participantJoinedBroadcastMessage);
-				// broadcast to all but new participant
-				peer->Send((char*)& participantJoinedMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
+				maxClients = unsigned(atoi(str));
 			}
-			break;
-			case REQUEST_MESSAGE:
+
+			RakNet::SocketDescriptor sd(serverPort, ipAddress); // changed server address to localhost
+			peer->Startup(maxClients, &sd, 1);
+			isServer = true;
+		}
+
+
+		if (isServer)
+		{
+			//Set up server things
+			peer->SetMaximumIncomingConnections(maxClients);
+
+			// server guid is me
+			serverSystemAddress = peer->GetMyBoundAddress();
+			participantSystemAddresses[HOST_USERNAME] = serverSystemAddress;
+			
+			std::cout << "Starting Server\n";
+		}
+		else
+		{
+			printf("Starting the client.\n");
+			peer->Connect(ipAddress, serverPort, 0, 0);
+		}
+
+		// lobby / network loop
+		while (doNetworkLoop)
+		{
+			// On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
+			if (isServer && !printTest && !!(GetAsyncKeyState('W') & 0x8000))
 			{
-				// only server can route messages
-				if (!isServer) break;
+				printTest = true;
 
-				MessageRequestPacket* requestMessagePacket = (MessageRequestPacket*)packet->data;
-
-				// verify requester is who they say they are
-				if (packet->systemAddress == participantSystemAddresses[requestMessagePacket->requesterUsername])
+				printf("\nUsername : IP\n");
+				for (std::pair<const std::basic_string<char>, RakNet::SystemAddress> participant : participantSystemAddresses)
 				{
-					MessageReceivePacket receiveMessagePacket = MessageReceivePacket();
-					// private or broadcast by receiver username / broadcast keyword
-					if(strcmp(requestMessagePacket->receiverUsername, BROADCAST_KEYWORD) == 0)
+					printf("%s : %s\n", participant.first.c_str(), participant.second.ToString());
+				}
+				printf("\n");
+			}
+			// message request
+			if (username[0] == 'A' && !messageTest && !!(GetAsyncKeyState('E') & 0x8000))
+			{
+				messageTest = true;
+				// printf("enter BROADCAST_KEYWORD in receiverUsername to broadcast")
+				// from instructions: "if the message is public (broadcast), use some recognizable keyword or symbol"
+				char receiverUsername[USERNAME_MAX_LENGTH] = "bob";
+				if (!!(GetAsyncKeyState('P') & 0x8000)) strcpy(receiverUsername, "bob");
+				else if (!!(GetAsyncKeyState('B') & 0x8000)) strcpy(receiverUsername, BROADCAST_KEYWORD);
+				char message[MESSAGE_MAX_LENGTH] = "Sup";
+
+				MessageRequestPacket privateMessageRequestPacket = MessageRequestPacket();
+				// private
+				privateMessageRequestPacket.typeId = REQUEST_MESSAGE;
+				// requester is me
+				strcpy(privateMessageRequestPacket.requesterUsername, username);
+				// to input receiver
+				strcpy(privateMessageRequestPacket.receiverUsername, receiverUsername);
+				// input message
+				strcpy(privateMessageRequestPacket.message, message);
+				// sender to server for routing
+				peer->Send((char*)& privateMessageRequestPacket, sizeof(MessageRequestPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
+
+				printf("Sending message to %s: %s\n", receiverUsername, message);
+			}
+			// client leave chat gracefully
+			if (username[0] == 'A' && !exitTest && !!(GetAsyncKeyState('Q') & 0x8000))
+			{
+				exitTest = true;
+
+				printf("\nExiting chat.\n");
+				peer->CloseConnection(serverSystemAddress, true, 0, HIGH_PRIORITY);
+			}
+
+			for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
+			{
+				switch (packet->data[0])
+				{
+					// remote nortifications not triggering
+				case ID_REMOTE_DISCONNECTION_NOTIFICATION:
+					printf("Another client has disconnected.\n");
+					break;
+				case ID_REMOTE_CONNECTION_LOST:
+					printf("Another client has lost the connection.\n");
+					break;
+				case ID_REMOTE_NEW_INCOMING_CONNECTION:
+				{
+					printf("Another client has connected.\n");
+				}
+				break;
+				case ID_CONNECTION_REQUEST_ACCEPTED:
+				{
+					printf("Our connection request has been accepted.\n");
+
+					// save server system adress for requesting messages
+					serverSystemAddress = packet->systemAddress;
+
+					//serverSystemAddress = packet->systemAddress;
+					ClientHelloPacket helloMessage = ClientHelloPacket();
+					// copy username value into hellomessage value
+					strcpy(helloMessage.username, username);
+					// send message packet struct pointer as char*
+					peer->Send((char*)& helloMessage, sizeof(ClientHelloPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
+				}
+				break;
+				case ID_NEW_INCOMING_CONNECTION:
+				{
+					printf("A connection is incoming.\n");
+				}
+				break;
+				case ID_NO_FREE_INCOMING_CONNECTIONS:
+					printf("The server is full.\n");
+					break;
+				case ID_DISCONNECTION_NOTIFICATION:
+					if (isServer) {
+						printf("A client has disconnected.\n");
+					}
+					else {
+						printf("We have been disconnected.\n");
+						doNetworkLoop = false;
+					}
+					break;
+				case ID_CONNECTION_LOST:
+					if (isServer) {
+						printf("A client lost the connection.\n");
+					}
+					else {
+						printf("Connection lost.\n");
+					}
+					break;
+				case CLIENT_HELLO_MESSAGE:
+				{
+					// cast packet data char* to MessagePacket*
+					ClientHelloPacket* clientHelloPacket = (ClientHelloPacket*)packet->data;
+					// TODO: check for duplicate username??
+					// map participant username to their system address
+					participantSystemAddresses[clientHelloPacket->username] = packet->systemAddress;
+					printf("%s has joined the chat!\n", clientHelloPacket->username);
+
+					// welcome client privately
+					MessageReceivePacket welcomeMessagePacket = MessageReceivePacket();
+					// sender is host
+					strcpy(welcomeMessagePacket.senderUsername, username);
+					// private message
+					welcomeMessagePacket.isBroadcast = false;
+					// "Welcome to the chat, username!"
+					char helloMessage[MESSAGE_MAX_LENGTH] = "Welcome to the chat, ";
+					strcat(helloMessage, clientHelloPacket->username);
+					strcat(helloMessage, "!");
+					strcpy(welcomeMessagePacket.message, helloMessage);
+					// send message packet struct pointer as char*
+					peer->Send((char*)& welcomeMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+
+					// broadcast client join to all but joined client
+					MessageReceivePacket participantJoinedMessagePacket = MessageReceivePacket();
+					// sender is host
+					strcpy(participantJoinedMessagePacket.senderUsername, username);
+					// broadcast
+					participantJoinedMessagePacket.isBroadcast = true;
+					// "username has joined the chat!"
+					char participantJoinedBroadcastMessage[MESSAGE_MAX_LENGTH];
+					strcpy(participantJoinedBroadcastMessage, clientHelloPacket->username);
+					strcat(participantJoinedBroadcastMessage, " has joined the chat!");
+					strcpy(participantJoinedMessagePacket.message, participantJoinedBroadcastMessage);
+					// broadcast to all but new participant
+					peer->Send((char*)& participantJoinedMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
+				}
+				break;
+				case REQUEST_MESSAGE:
+				{
+					// only server can route messages
+					if (!isServer) break;
+
+					MessageRequestPacket* requestMessagePacket = (MessageRequestPacket*)packet->data;
+
+					// verify requester is who they say they are
+					if (packet->systemAddress.systemIndex == participantSystemAddresses[requestMessagePacket->requesterUsername].systemIndex)
 					{
-						receiveMessagePacket.isBroadcast = true;
+						MessageReceivePacket receiveMessagePacket = MessageReceivePacket();
+						// private or broadcast by receiver username / broadcast keyword
+						if (strcmp(requestMessagePacket->receiverUsername, BROADCAST_KEYWORD) == 0)
+						{
+							receiveMessagePacket.isBroadcast = true;
+						}
+						else
+						{
+							receiveMessagePacket.isBroadcast = false;
+						}
+						// sender is requester
+						strcpy(receiveMessagePacket.senderUsername, requestMessagePacket->requesterUsername);
+						// copy over message
+						strcpy(receiveMessagePacket.message, requestMessagePacket->message);
+
+						if (receiveMessagePacket.isBroadcast)
+						{
+							// broadcast to all but requester
+							peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
+
+							printf("(broadcast) %s: %s\n", receiveMessagePacket.senderUsername, receiveMessagePacket.message);
+						}
+						else
+						{
+							// get receiver system address by requested receiver username
+							RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestMessagePacket->receiverUsername];
+							// send to receiver
+							peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
+
+							printf("(private) %s to %s: %s\n", receiveMessagePacket.senderUsername, requestMessagePacket->receiverUsername, receiveMessagePacket.message);
+						}
+					}
+				}
+				break;
+				case RECEIVE_MESSAGE:
+				{
+					// cast packet data char* to MessagePacket*
+					MessageReceivePacket* messagePacket = (MessageReceivePacket*)packet->data;
+					// print message
+					if (messagePacket->isBroadcast)
+					{
+						printf("(broadcast) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
 					}
 					else
 					{
-						receiveMessagePacket.isBroadcast = false;
-					}
-					// sender is requester
-					strcpy(receiveMessagePacket.senderUsername, requestMessagePacket->requesterUsername);
-					// copy over message
-					strcpy(receiveMessagePacket.message, requestMessagePacket->message);
-
-					if(receiveMessagePacket.isBroadcast)
-					{
-						// broadcast to all but requester
-						peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
-
-						printf("(broadcast) %s: %s\n", receiveMessagePacket.senderUsername, receiveMessagePacket.message);
-					}
-					else
-					{
-						// get receiver system address by requested receiver username
-						RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestMessagePacket->receiverUsername];
-						// send to receiver
-						peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
-
-						printf("(private) %s to %s: %s\n", receiveMessagePacket.senderUsername, requestMessagePacket->receiverUsername, receiveMessagePacket.message);
+						printf("(private) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
 					}
 				}
-			}
-			break;
-			case RECEIVE_MESSAGE:
-			{
-				// cast packet data char* to MessagePacket*
-				MessageReceivePacket* messagePacket = (MessageReceivePacket*)packet->data;
-				// print message
-				if (messagePacket->isBroadcast)
-				{
-					printf("(broadcast) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
-				}
-				else
-				{
-					printf("(private) %s: %s\n", messagePacket->senderUsername, messagePacket->message);
-				}
-			}
-			break;
-			default:
-				printf("Message with identifier %i has arrived.\n", packet->data[0]);
 				break;
+				default:
+					printf("Message with identifier %i has arrived.\n", packet->data[0]);
+					break;
+				}
 			}
 		}
+
+		RakNet::RakPeerInterface::DestroyInstance(peer);
 	}
-
-	RakNet::RakPeerInterface::DestroyInstance(peer);
-
 	return 0;
 }
