@@ -16,8 +16,7 @@ enum GameMessageId
 {
 	CUSTOM_GAME_MESSAGE = ID_USER_PACKET_ENUM + 1,
 	CLIENT_HELLO_MESSAGE,
-	SEND_PRIVATE_MESSAGE,
-	SEND_BROADCAST_MESSAGE,
+	REQUEST_MESSAGE,
 	RECEIVE_MESSAGE
 };
 
@@ -68,7 +67,8 @@ int main(void)
 	std::unordered_map<std::string, RakNet::SystemAddress> participantSystemAddresses;
 	// store server system address to request messages
 	RakNet::SystemAddress serverSystemAddress;
-	bool test = false;
+	const char BROADCAST_KEYWORD[USERNAME_MAX_LENGTH] = "BROADCAST";
+	bool messageTest = false;
 
 	// initialize ip address
 	printf("Enter server IP or hit enter for 127.0.0.1\n");
@@ -150,29 +150,30 @@ int main(void)
 	while (1)
 	{
 		// TODO: On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
-		// TODO: Participant request private message
-		// // how to get server's system adress as a client??
-		if (username[0] == 'A' && !test && !!(GetAsyncKeyState('Q') & 0x8000))
+		if (username[0] == 'A' && !messageTest && !!(GetAsyncKeyState('Q') & 0x8000))
 		{
-			test = true;
+			messageTest = true;
+			// printf("enter BROADCAST_KEYWORD in receiverUsername to broadcast")
+			// from instructions: "if the message is public (broadcast), use some recognizable keyword or symbol"
 			char receiverUsername[USERNAME_MAX_LENGTH] = "bob";
-			char privateMessage[MESSAGE_MAX_LENGTH] = "Sup";
+			if (!!(GetAsyncKeyState('P') & 0x8000)) strcpy(receiverUsername, "bob");
+			else if (!!(GetAsyncKeyState('B') & 0x8000)) strcpy(receiverUsername, BROADCAST_KEYWORD);
+			char message[MESSAGE_MAX_LENGTH] = "Sup";
 
 			MessageRequestPacket privateMessageRequestPacket = MessageRequestPacket();
 			// private
-			privateMessageRequestPacket.typeId = SEND_PRIVATE_MESSAGE;
+			privateMessageRequestPacket.typeId = REQUEST_MESSAGE;
 			// requester is me
 			strcpy(privateMessageRequestPacket.requesterUsername, username);
 			// to input receiver
 			strcpy(privateMessageRequestPacket.receiverUsername, receiverUsername);
 			// input message
-			strcpy(privateMessageRequestPacket.message, privateMessage);
+			strcpy(privateMessageRequestPacket.message, message);
 			// sender to server for routing
 			peer->Send((char*)& privateMessageRequestPacket, sizeof(MessageRequestPacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
 
-			printf("Sending private message to %s: %s\n", receiverUsername, privateMessage);
+			printf("Sending message to %s: %s\n", receiverUsername, message);
 		}
-		// TODO: Participant request broadcast message
 		// TODO: client leave chat gracefully
 
 		for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
@@ -266,53 +267,47 @@ int main(void)
 				peer->Send((char*)& participantJoinedMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
 			}
 			break;
-			case SEND_PRIVATE_MESSAGE:
+			case REQUEST_MESSAGE:
 			{
 				// only server can route messages
 				if (!isServer) break;
 
-				MessageRequestPacket* requestPrivateMessagePacket = (MessageRequestPacket*)packet->data;
+				MessageRequestPacket* requestMessagePacket = (MessageRequestPacket*)packet->data;
 
 				// verify requester is who they say they are
-				if (packet->systemAddress == participantSystemAddresses[requestPrivateMessagePacket->requesterUsername])
+				if (packet->systemAddress == participantSystemAddresses[requestMessagePacket->requesterUsername])
 				{
-					MessageReceivePacket receivePrivateMessagePacket = MessageReceivePacket();
-					// private
-					receivePrivateMessagePacket.isBroadcast = false;
+					MessageReceivePacket receiveMessagePacket = MessageReceivePacket();
+					// private or broadcast by receiver username / broadcast keyword
+					if(strcmp(requestMessagePacket->receiverUsername, BROADCAST_KEYWORD) == 0)
+					{
+						receiveMessagePacket.isBroadcast = true;
+					}
+					else
+					{
+						receiveMessagePacket.isBroadcast = false;
+					}
 					// sender is requester
-					strcpy(receivePrivateMessagePacket.senderUsername, requestPrivateMessagePacket->requesterUsername);
+					strcpy(receiveMessagePacket.senderUsername, requestMessagePacket->requesterUsername);
 					// copy over message
-					strcpy(receivePrivateMessagePacket.message, requestPrivateMessagePacket->message);
-					// get receiver system address by requested receiver username
-					RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestPrivateMessagePacket->receiverUsername];
-					// send to receiver
-					peer->Send((char*)& receivePrivateMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
+					strcpy(receiveMessagePacket.message, requestMessagePacket->message);
 
-					printf("(private) %s to %s: %s\n", receivePrivateMessagePacket.senderUsername, requestPrivateMessagePacket->receiverUsername, receivePrivateMessagePacket.message);
-				}
-			}
-			break;
-			case SEND_BROADCAST_MESSAGE:
-			{
-				// only server can route messages
-				if (!isServer) break;
+					if(receiveMessagePacket.isBroadcast)
+					{
+						// broadcast to all but requester
+						peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, true);
 
-				MessageRequestPacket* requestBroadcastMessagePacket = (MessageRequestPacket*)packet->data;
+						printf("(broadcast) %s: %s\n", receiveMessagePacket.senderUsername, receiveMessagePacket.message);
+					}
+					else
+					{
+						// get receiver system address by requested receiver username
+						RakNet::SystemAddress receiverSystemAddress = participantSystemAddresses[requestMessagePacket->receiverUsername];
+						// send to receiver
+						peer->Send((char*)& receiveMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, receiverSystemAddress, false);
 
-				// verify requester is who they say they are
-				if (packet->systemAddress == participantSystemAddresses[requestBroadcastMessagePacket->requesterUsername])
-				{
-					MessageReceivePacket receiveBroadcastMessagePacket = MessageReceivePacket();
-					// broadcast
-					receiveBroadcastMessagePacket.isBroadcast = true;
-					// sender is requester
-					strcpy(receiveBroadcastMessagePacket.senderUsername, requestBroadcastMessagePacket->requesterUsername);
-					// copy over message
-					strcpy(receiveBroadcastMessagePacket.message, requestBroadcastMessagePacket->message);
-					// broadcast to all but sender
-					peer->Send((char*)& receiveBroadcastMessagePacket, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
-
-					printf("(broadcast) %s: %s\n", receiveBroadcastMessagePacket.senderUsername, receiveBroadcastMessagePacket.message);
+						printf("(private) %s to %s: %s\n", receiveMessagePacket.senderUsername, requestMessagePacket->receiverUsername, receiveMessagePacket.message);
+					}
 				}
 			}
 			break;
