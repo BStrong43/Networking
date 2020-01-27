@@ -211,57 +211,57 @@ int main(void)
 				peer->CloseConnection(serverSystemAddress, true, 0, HIGH_PRIORITY);
 			}
 
-			//MESSAGE INPUT
-			{
-			std::string pressedKeys = KeyboardReader::getPressedKeys();
-			if (pressedKeys == "-1" && lastKeys != "-1")
-			{
-				if (message != "")
-					message = KeyboardReader::trimMessage(message);
-				//std::cout << "Character Deleted" << std::endl;
-				lastKeys = "-1";
-			}
-			else if (pressedKeys == "-2" && lastKeys != "-2")
-			{
-				//MESSAGE READY TO SEND
-				MessageReceivePacket packet = MessageReceivePacket();
-				packet.isBroadcast = true;
-				packet.typeId = RECEIVE_MESSAGE;
-				strcpy(packet.message, message.c_str());
-				peer->Send((char*)& packet, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
-				//Clear text
-				message = "";
-				lastKeys = "-2";
-			}
-			else if (pressedKeys == "")
-			{
-				lastKeys = "";
-			}
-			else
-			{
-				if (lastKeys == "")
-				{
-					message += pressedKeys;
-					lastKeys = pressedKeys;
-				}
-				else
-				{
-					std::string nextLastKeys = pressedKeys;
-					for (int i = 0; i < lastKeys.length(); i++)
-					{
-						char key = lastKeys[i];
-						int index = pressedKeys.find(key);
-						if (index > 0)
-						{
-							pressedKeys.erase(index, 1);
-						}
-					}
-					pressedKeys.shrink_to_fit();
-					message += pressedKeys;
-					lastKeys = nextLastKeys;
-				}
-			}
-			}
+			// //MESSAGE INPUT
+			// {
+			// std::string pressedKeys = KeyboardReader::getPressedKeys();
+			// if (pressedKeys == "-1" && lastKeys != "-1")
+			// {
+			// 	if (message != "")
+			// 		message = KeyboardReader::trimMessage(message);
+			// 	//std::cout << "Character Deleted" << std::endl;
+			// 	lastKeys = "-1";
+			// }
+			// else if (pressedKeys == "-2" && lastKeys != "-2")
+			// {
+			// 	//MESSAGE READY TO SEND
+			// 	MessageReceivePacket packet = MessageReceivePacket();
+			// 	packet.isBroadcast = true;
+			// 	packet.typeId = RECEIVE_MESSAGE;
+			// 	strcpy(packet.message, message.c_str());
+			// 	peer->Send((char*)& packet, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
+			// 	//Clear text
+			// 	message = "";
+			// 	lastKeys = "-2";
+			// }
+			// else if (pressedKeys == "")
+			// {
+			// 	lastKeys = "";
+			// }
+			// else
+			// {
+			// 	if (lastKeys == "")
+			// 	{
+			// 		message += pressedKeys;
+			// 		lastKeys = pressedKeys;
+			// 	}
+			// 	else
+			// 	{
+			// 		std::string nextLastKeys = pressedKeys;
+			// 		for (int i = 0; i < lastKeys.length(); i++)
+			// 		{
+			// 			char key = lastKeys[i];
+			// 			int index = pressedKeys.find(key);
+			// 			if (index > 0)
+			// 			{
+			// 				pressedKeys.erase(index, 1);
+			// 			}
+			// 		}
+			// 		pressedKeys.shrink_to_fit();
+			// 		message += pressedKeys;
+			// 		lastKeys = nextLastKeys;
+			// 	}
+			// }
+			// }
 
 			for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
 			{
