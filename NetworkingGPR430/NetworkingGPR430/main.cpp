@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-
+#include "KeyboardReader.h"
 //RakNet Includes
 #include "RakNet/RakPeerInterface.h"
 #include "RakNet/MessageIdentifiers.h"
@@ -69,6 +69,7 @@ int main(void)
 	// store server system address to request messages
 	RakNet::SystemAddress serverSystemAddress;
 	const char BROADCAST_KEYWORD[USERNAME_MAX_LENGTH] = "BROADCAST";
+	std::string message = "";
 	bool doNetworkLoop = true;
 	bool messageTest = false;
 	bool printTest = false;
@@ -158,6 +159,7 @@ int main(void)
 		}
 
 		// lobby / network loop
+		std::string lastKeys = "";
 		while (doNetworkLoop)
 		{
 			// On demand, print user names and IP addresses of all connected users to the host console or to a log file with a time stamp
@@ -204,6 +206,58 @@ int main(void)
 
 				printf("\nExiting chat.\n");
 				peer->CloseConnection(serverSystemAddress, true, 0, HIGH_PRIORITY);
+			}
+
+			//MESSAGE INPUT
+			{
+			std::string pressedKeys = KeyboardReader::getPressedKeys();
+			if (pressedKeys == "-1" && lastKeys != "-1")
+			{
+				if (message != "")
+					message = KeyboardReader::trimMessage(message);
+				//std::cout << "Character Deleted" << std::endl;
+				lastKeys = "-1";
+			}
+			else if (pressedKeys == "-2" && lastKeys != "-2")
+			{
+				//MESSAGE READY TO SEND
+				MessageReceivePacket packet = MessageReceivePacket();
+				packet.isBroadcast = true;
+				packet.typeId = RECEIVE_MESSAGE;
+				strcpy(packet.message, message.c_str());
+				peer->Send((char*)& packet, sizeof(MessageReceivePacket), HIGH_PRIORITY, RELIABLE_ORDERED, 0, serverSystemAddress, false);
+				//Clear text
+				message = "";
+				lastKeys = "-2";
+			}
+			else if (pressedKeys == "")
+			{
+				lastKeys = "";
+			}
+			else
+			{
+				if (lastKeys == "")
+				{
+					message += pressedKeys;
+					lastKeys = pressedKeys;
+				}
+				else
+				{
+					std::string nextLastKeys = pressedKeys;
+					for (int i = 0; i < lastKeys.length(); i++)
+					{
+						char key = lastKeys[i];
+						int index = pressedKeys.find(key);
+						if (index > 0)
+						{
+							pressedKeys.erase(index, 1);
+						}
+					}
+					pressedKeys.shrink_to_fit();
+					message += pressedKeys;
+					lastKeys = nextLastKeys;
+				}
+			}
 			}
 
 			for (packet = peer->Receive(); packet; peer->DeallocatePacket(packet), packet = peer->Receive())
