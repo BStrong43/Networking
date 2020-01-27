@@ -56,7 +56,7 @@ struct MessageReceivePacket
 int main(void)
 {
 	char str[512];
-	RakNet::RakPeerInterface* peer = RakNet::RakPeerInterface::GetInstance();
+	RakNet::RakPeerInterface* peer;
 	RakNet::Packet* packet;
 	bool isServer;
 	unsigned int maxClients;
@@ -79,6 +79,9 @@ int main(void)
 	// TODO: reconnection not working in this loop, need to do cleanup
 	while (1)
 	{
+		peer = RakNet::RakPeerInterface::GetInstance();
+		doNetworkLoop = true;
+		
 		// initialize ip address
 		printf("Enter server IP or hit enter for 127.0.0.1\n");
 		fgets(ipAddress, 512, stdin);
