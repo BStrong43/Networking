@@ -284,10 +284,13 @@ A3DYLIBSYMBOL a3i32 a3demoCB_idle(a3_DemoState *demoState)
 		if (a3timerUpdate(demoState->renderTimer) > 0)
 		{
 			// render timer ticked, update demo state and draw
-			a3demo_update(demoState, demoState->renderTimer->secondsPerTick);
+			//a3demo_update(demoState, demoState->renderTimer->secondsPerTick);
 			a3demo_input(demoState, demoState->renderTimer->secondsPerTick);
-			a3demo_render(demoState);
-
+			//a3demo_render(demoState);
+			static int updateCount = 0;
+			updateCount++;
+			printf("%i\n", updateCount);
+			
 			// update input
 			a3mouseUpdate(demoState->mouse);
 			a3keyboardUpdate(demoState->keyboard);
