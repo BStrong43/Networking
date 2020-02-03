@@ -82,10 +82,21 @@ struct a3_DemoState
 
 	// --------------------------------------------------------------------
 	// NETWORKING STUFF
-	
+
 	a3_Timer renderTimer[1];
 
 	RakNet::RakPeerInterface* peer;
+
+	// store remote info by index
+	//struct RemoteInformation
+	//{
+	//	char remoteName[MAX_USERNAME];
+	//	int otherdata;
+	//};
+	//RemoteInformation remote[];
+
+	//GetConnectionList(),GetIndexFromSystemAddress()
+	// on connect accept, send back index so they can send it back later so server doesn't need to look them up
 };
 
 
@@ -188,26 +199,31 @@ void a3demoTestRender(a3_DemoState const* demoState)
 
 void a3DemoTestNetworking_Receive(a3_DemoState const* demoState)
 {
-	static int updateCount = 0;
-	updateCount++;
-	printf("%i\n", updateCount);
-
-	for(RakNet::Packet* packet = demoState->peer->Receive(); packet; demoState->peer->DeallocatePacket(packet), packet = demoState->peer->Receive())
+	for (RakNet::Packet* packet = demoState->peer->Receive(); packet; demoState->peer->DeallocatePacket(packet), packet = demoState->peer->Receive())
 	{
-		
+		// queue stuff to be sent
 	}
 }
 
 void a3DemoTestNetworking_Send(a3_DemoState const* demoState)
 {
-	static int updateCount = 0;
-	updateCount++;
-	printf("%i\n", updateCount);
+	// send queue, clear queue
 }
 
 void a3DemoTestInput(a3_DemoState const* demoState)
 {
 	// INPUT
+	//if (demoState->keyboard->key.key['b'])
+		//&& demoState->keyboard->key0.key['b'])
+	//printf("%i", a3keyboardGetDifferenceASCII(demoState->keyboard, 'b', ' '));
+	//printf("%i", a3keyboardGetDifference(demoState->keyboard, a3key_B, ));
+	//printf("%i", a3keyboardGetState(demoState->keyboard, a3key_B));
+	//printf(demoState->keyboard->key.key['b']);
+	//printf(demoState->keyboard->key.key['b']);
+	//if
+	{
+		//printf("B");
+	}
 }
 
 void a3DemoTestUpdate(a3_DemoState const* demoState)
@@ -317,12 +333,12 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_load(a3_DemoState* demoState, a3boolean hot
 		a3fileStreamMakeDirectory("./data");
 
 		// SET UP NETWORKING
-		if(!demoState->peer)
+		if (!demoState->peer)
 		{
 			demoState->peer = RakNet::RakPeerInterface::GetInstance();
-			if(demoState->peer)
+			if (demoState->peer)
 			{
-				
+
 			}
 		}
 
@@ -377,7 +393,7 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_unload(a3_DemoState* demoState, a3boolean h
 			RakNet::RakPeerInterface::DestroyInstance(demoState->peer);
 			demoState->peer = nullptr;
 		}
-		
+
 		// erase persistent state
 		free(demoState);
 		demoState = 0;
@@ -408,7 +424,7 @@ A3DYLIBSYMBOL a3i32 a3demoCB_idle(a3_DemoState* demoState)
 			//a3demo_update(demoState, demoState->renderTimer->secondsPerTick);
 			//a3demo_input(demoState, demoState->renderTimer->secondsPerTick);
 			//a3demo_render(demoState);
-			
+
 			a3DemoTestInput(demoState); // my input
 			a3DemoTestNetworking_Receive(demoState); // their input
 			a3DemoTestUpdate(demoState); // process input results
