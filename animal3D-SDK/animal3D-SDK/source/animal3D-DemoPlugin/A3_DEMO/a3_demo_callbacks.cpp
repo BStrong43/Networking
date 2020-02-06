@@ -40,6 +40,25 @@
 // other demo includes
 #include "RakNet/RakPeerInterface.h"
 
+enum a3Game_Selection
+{
+	UNCHOSEN = -1,
+	TICTACTOE,
+	BATTLESHIP,
+	NUM_SELCTIONS
+};
+
+enum a3Network_Modes
+{
+	CONFIG = 0,
+	GAME_SELECT,
+	PLAYER_SELECT,
+	LOBBY,
+	SPECTATING,
+	CHALLENGING,
+	END_GAME,
+	NUM_STATES
+};
 
 //#include "a3_DemoState.h"
 	// persistent demo state data structure
@@ -82,10 +101,12 @@ struct a3_DemoState
 
 	// --------------------------------------------------------------------
 	// NETWORKING STUFF
-
+	a3Network_Modes activeMode = CONFIG;
+	a3Game_Selection activeGame;
+	RakNet::RakPeerInterface* peer;
 	a3_Timer renderTimer[1];
 
-	RakNet::RakPeerInterface* peer;
+	
 
 	// store remote info by index
 	//struct RemoteInformation
@@ -130,7 +151,6 @@ inline void a3demo_initializeText(a3_TextRenderer* text)
 
 //-----------------------------------------------------------------------------
 // callback sub-routines
-
 inline void a3demoCB_keyCharPress_main(a3_DemoState* demoState, a3i32 asciiKey,
 	const a3ui32 demoSubMode, const a3ui32 demoOutput,
 	const a3ui32 demoSubModeCount, const a3ui32 demoOutputCount)
@@ -213,8 +233,8 @@ void a3DemoTestNetworking_Send(a3_DemoState const* demoState)
 void a3DemoTestInput(a3_DemoState const* demoState)
 {
 	// INPUT
-	//if (demoState->keyboard->key.key['b'])
-		//&& demoState->keyboard->key0.key['b'])
+	if (demoState->keyboard->key.key['b']
+		&& demoState->keyboard->key0.key['b'])
 	//printf("%i", a3keyboardGetDifferenceASCII(demoState->keyboard, 'b', ' '));
 	//printf("%i", a3keyboardGetDifference(demoState->keyboard, a3key_B, ));
 	//printf("%i", a3keyboardGetState(demoState->keyboard, a3key_B));
@@ -222,7 +242,7 @@ void a3DemoTestInput(a3_DemoState const* demoState)
 	//printf(demoState->keyboard->key.key['b']);
 	//if
 	{
-		//printf("B");
+		printf("B");
 	}
 }
 

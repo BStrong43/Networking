@@ -35,3 +35,6 @@ _WORKSPACE/
 *.idea
 *.gradle
 *.tmp
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
