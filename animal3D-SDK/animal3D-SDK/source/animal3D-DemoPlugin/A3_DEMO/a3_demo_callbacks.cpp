@@ -41,7 +41,7 @@
 //-----------------------------------------------------------------------------
 // other demo includes
 #include "a3NetworkDemoState.h"
-#include "RakNet/RakPeerInterface.h"
+#include "a3Server.h"
 
 
 //#include "animal3D-A3DG/a3graphics/a3_TextRenderer.h"
@@ -122,39 +122,6 @@ inline void a3demoCB_keyCharHold_main(a3_DemoState* demoState, a3i32 asciiKey)
 		break;
 	case 'L':
 		break;
-	}
-}
-
-#include <GL/glew.h>
-
-void a3demoTestRender(a3_DemoState const* demoState)
-{
-	// clear color
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	// draw some text
-	a3textDraw(demoState->text,
-		// center near plane
-		0, 0, -1,
-		// green
-		0, 1, 0, 1,
-		// text, total time
-		"%+.3f", a3f32(demoState->renderTimer->totalTime));
-}
-
-void a3DemoTestInput(a3_DemoState const* demoState)
-{
-	// INPUT
-	if (demoState->keyboard->key.key['b']
-		&& demoState->keyboard->key0.key['b'])
-	//printf("%i", a3keyboardGetDifferenceASCII(demoState->keyboard, 'b', ' '));
-	//printf("%i", a3keyboardGetDifference(demoState->keyboard, a3key_B, ));
-	//printf("%i", a3keyboardGetState(demoState->keyboard, a3key_B));
-	//printf(demoState->keyboard->key.key['b']);
-	//printf(demoState->keyboard->key.key['b']);
-	//if
-	{
-		printf("B");
 	}
 }
 
@@ -262,7 +229,7 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_load(a3_DemoState* demoState, a3boolean hot
 		// SET UP NETWORKING
 		if (!demoState->pPeer)
 		{
-			//demoState->pPeer = new a3Peer();
+			demoState->pPeer = new a3Server();
 			if (demoState->pPeer)
 			{
 			}
@@ -316,6 +283,7 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_unload(a3_DemoState* demoState, a3boolean h
 		// NETWORKING CLEANUP
 		if (demoState->pPeer)
 		{
+			demoState->pPeer->cleanup(demoState);
 		}
 
 		// erase persistent state
@@ -349,11 +317,10 @@ A3DYLIBSYMBOL a3i32 a3demoCB_idle(a3_DemoState* demoState)
 			//a3demo_input(demoState, demoState->renderTimer->secondsPerTick);
 			//a3demo_render(demoState);
 
-			a3DemoTestInput(demoState); // my input
-			//a3DemoTestNetworking_Receive(demoState); // their input
-			//a3DemoTestUpdate(demoState); // process input results
-			//a3DemoTestNetworking_Send(demoState); // send input/results
-			a3demoTestRender(demoState); // render input results
+			demoState->pPeer->input(demoState);
+			demoState->pPeer->networking(demoState);
+			demoState->pPeer->update(demoState);
+			demoState->pPeer->render(demoState);
 
 			// update input
 			a3mouseUpdate(demoState->mouse);

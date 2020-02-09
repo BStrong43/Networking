@@ -1,7 +1,10 @@
 #ifndef A3_NETWORK_DEMO_STATE
 #define A3_NETWORK_DEMO_STATE
 
+#include "animal3D/animal3D.h"
+#include "animal3D-A3DG/a3graphics/a3_TextRenderer.h"
 #include "a3Peer.h"
+#include "a3KeyboardInput.h"
 
 enum a3GameSelection
 {
@@ -65,6 +68,7 @@ struct a3_DemoState
 	// NETWORKING STUFF
 	a3NetworkMode activeMode = CONFIG;
 	a3GameSelection activeGame;
+	a3KeyboardInput keyboardInput = a3KeyboardInput(keyboard);
 	a3Peer* pPeer;
 	a3_Timer renderTimer[1];
 

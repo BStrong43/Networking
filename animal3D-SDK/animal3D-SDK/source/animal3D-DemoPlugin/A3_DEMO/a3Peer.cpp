@@ -1,7 +1,6 @@
 #include "a3Peer.h"
 
-a3Peer::a3Peer(a3KeyboardInput* keyboardInput)
+a3Peer::a3Peer()
 {
-	pKeyboardInput = keyboardInput;
 	pRakPeer = RakNet::RakPeerInterface::GetInstance();
 }

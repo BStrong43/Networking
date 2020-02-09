@@ -192,6 +192,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3KeyboardInput.cpp" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Peer.cpp" />
+    <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Server.cpp" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-input.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-render.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-update.c" />
@@ -212,6 +213,7 @@
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3NetworkDemoState.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Packet.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Peer.h" />
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Server.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
