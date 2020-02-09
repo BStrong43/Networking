@@ -190,6 +190,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3KeyboardInput.cpp" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-input.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-render.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState\a3_DemoState_idle-update.c" />
@@ -206,6 +207,7 @@
     <ClCompile Include="_src_win\main_dll.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3KeyboardInput.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Packet.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Peer.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_DemoState.h" />

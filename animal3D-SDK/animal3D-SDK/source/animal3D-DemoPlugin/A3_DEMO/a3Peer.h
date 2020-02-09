@@ -4,7 +4,7 @@
 #include "RakNet/RakPeerInterface.h"
 #include "a3Packet.h"
 
-const int MAX_USERNAME_LEN = 256;
+const int MAX_USERNAME_LEN = 16;
 const int MAX_NUM_CLIENTS = 10;
 
 struct RemoteInfo

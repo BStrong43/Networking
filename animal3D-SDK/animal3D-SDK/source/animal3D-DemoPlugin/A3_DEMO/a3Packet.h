@@ -3,8 +3,8 @@
 
 #include <cstring>
 
-// 256 - 1 (typeId) - 1 (queueIndex)
-const int PACKET_MAX_BYTES = 254;
+// 512 - 1 (typeId) - 1 (queueIndex)
+const int PACKET_MAX_BYTES = 510;
 
 enum GameMessageId
 {
