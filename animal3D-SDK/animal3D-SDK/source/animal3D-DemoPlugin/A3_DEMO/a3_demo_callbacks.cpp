@@ -39,8 +39,9 @@
 //-----------------------------------------------------------------------------
 // other demo includes
 #include "RakNet/RakPeerInterface.h"
+#include "a3Peer.h"
 
-enum a3Game_Selection
+enum a3GameSelection
 {
 	UNCHOSEN = -1,
 	TICTACTOE,
@@ -48,7 +49,7 @@ enum a3Game_Selection
 	NUM_SELCTIONS
 };
 
-enum a3Network_Modes
+enum a3NetworkMode
 {
 	CONFIG = 0,
 	GAME_SELECT,
@@ -101,9 +102,9 @@ struct a3_DemoState
 
 	// --------------------------------------------------------------------
 	// NETWORKING STUFF
-	a3Network_Modes activeMode = CONFIG;
-	a3Game_Selection activeGame;
-	RakNet::RakPeerInterface* peer;
+	a3NetworkMode activeMode = CONFIG;
+	a3GameSelection activeGame;
+	a3Peer* pPeer;
 	a3_Timer renderTimer[1];
 
 	
@@ -217,19 +218,6 @@ void a3demoTestRender(a3_DemoState const* demoState)
 		"%+.3f", a3f32(demoState->renderTimer->totalTime));
 }
 
-void a3DemoTestNetworking_Receive(a3_DemoState const* demoState)
-{
-	for (RakNet::Packet* packet = demoState->peer->Receive(); packet; demoState->peer->DeallocatePacket(packet), packet = demoState->peer->Receive())
-	{
-		// queue stuff to be sent
-	}
-}
-
-void a3DemoTestNetworking_Send(a3_DemoState const* demoState)
-{
-	// send queue, clear queue
-}
-
 void a3DemoTestInput(a3_DemoState const* demoState)
 {
 	// INPUT
@@ -244,11 +232,6 @@ void a3DemoTestInput(a3_DemoState const* demoState)
 	{
 		printf("B");
 	}
-}
-
-void a3DemoTestUpdate(a3_DemoState const* demoState)
-{
-	// INPUT
 }
 
 //-----------------------------------------------------------------------------
@@ -353,12 +336,11 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_load(a3_DemoState* demoState, a3boolean hot
 		a3fileStreamMakeDirectory("./data");
 
 		// SET UP NETWORKING
-		if (!demoState->peer)
+		if (!demoState->pPeer)
 		{
-			demoState->peer = RakNet::RakPeerInterface::GetInstance();
-			if (demoState->peer)
+			//demoState->pPeer = new a3Peer();
+			if (demoState->pPeer)
 			{
-
 			}
 		}
 
@@ -408,10 +390,8 @@ A3DYLIBSYMBOL a3_DemoState* a3demoCB_unload(a3_DemoState* demoState, a3boolean h
 		a3trigFree();
 
 		// NETWORKING CLEANUP
-		if (demoState->peer)
+		if (demoState->pPeer)
 		{
-			RakNet::RakPeerInterface::DestroyInstance(demoState->peer);
-			demoState->peer = nullptr;
 		}
 
 		// erase persistent state
@@ -446,9 +426,9 @@ A3DYLIBSYMBOL a3i32 a3demoCB_idle(a3_DemoState* demoState)
 			//a3demo_render(demoState);
 
 			a3DemoTestInput(demoState); // my input
-			a3DemoTestNetworking_Receive(demoState); // their input
-			a3DemoTestUpdate(demoState); // process input results
-			a3DemoTestNetworking_Send(demoState); // send input/results
+			//a3DemoTestNetworking_Receive(demoState); // their input
+			//a3DemoTestUpdate(demoState); // process input results
+			//a3DemoTestNetworking_Send(demoState); // send input/results
 			a3demoTestRender(demoState); // render input results
 
 			// update input
