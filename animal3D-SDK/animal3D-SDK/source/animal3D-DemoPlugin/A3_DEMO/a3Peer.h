@@ -2,10 +2,12 @@
 #define A3_PEER_H
 
 #include "RakNet/RakPeerInterface.h"
-#include "a3Packet.h"
+#include "a3KeyboardInput.h"
 
 const int MAX_USERNAME_LEN = 16;
 const int MAX_NUM_CLIENTS = 10;
+
+struct a3_DemoState;
 
 struct RemoteInfo
 {
@@ -15,13 +17,18 @@ struct RemoteInfo
 class a3Peer
 {
 public:
-	virtual void init();
-	virtual void cleanup();
-	//input
-	//update
-	//render
-protected:	
+	virtual void init(a3_DemoState* pDemoState) = 0;
+	virtual void cleanup(a3_DemoState* pDemoState) = 0;
+	
+	virtual void input(a3_DemoState* pDemoState) = 0;
+	virtual void networking(a3_DemoState* pDemoState) = 0;
+	virtual void update(a3_DemoState* pDemoState) = 0;
+	virtual void render(a3_DemoState* pDemoState) = 0;
+protected:
+	a3Peer(a3KeyboardInput* keyboardInput);
+
 	RakNet::RakPeerInterface* pRakPeer;
+	a3KeyboardInput* pKeyboardInput;
 	char username[MAX_USERNAME_LEN];
 	RemoteInfo remotes[MAX_NUM_CLIENTS];
 	//KeyBoard Info
