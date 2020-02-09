@@ -15,7 +15,7 @@ enum GameMessageId
 struct Packet
 {
 	unsigned char typeId = INVALID;
-	unsigned char queueIndex = 0;
+	size_t queueIndex = 0;
 	char data[PACKET_MAX_BYTES] = {};
 };
 

@@ -35,8 +35,7 @@
 
 #include "animal3D/animal3D.h"
 #include "animal3D-A3DG/animal3D-A3DG.h"
-#include "RakNet/RakPeer.h"
-#include "RakNet/RakPeerInterface.h"
+
 
 //-----------------------------------------------------------------------------
 // other demo includes
@@ -87,6 +86,7 @@ extern "C"
 	{
 		demoStateMode_main,
 	};
+
 	
 //-----------------------------------------------------------------------------
 
@@ -150,6 +150,7 @@ extern "C"
 
 		// cameras
 		a3ui32 activeCamera;
+
 
 		//---------------------------------------------------------------------
 		// object arrays: organized as anonymous unions for two reasons: 
