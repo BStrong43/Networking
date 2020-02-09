@@ -29,17 +29,22 @@
 
 
 #include "a3_dylib_config_export.h"
-#include <animal3D-A3DM/a3math/a3sqrt.h>
 // animal3D framework includes
 
 #include "animal3D/animal3D.h"
-#include "animal3D-A3DG/animal3D-A3DG.h"
+//#include <animal3D-A3DM/a3math/a3sqrt.h>
+//#include "animal3D-A3DG/animal3D-A3DG.h"
 #include "animal3D-A3DM/animal3D-A3DM.h"
+#include "animal3D-A3DG/a3graphics/a3_Framebuffer.h"
+#include "animal3D-A3DG/a3graphics/a3_TextRenderer.h"
 
 //-----------------------------------------------------------------------------
 // other demo includes
 #include "RakNet/RakPeerInterface.h"
 #include "a3Peer.h"
+
+
+//#include "animal3D-A3DG/a3graphics/a3_TextRenderer.h"
 
 enum a3GameSelection
 {
