@@ -68,7 +68,7 @@ struct a3_DemoState
 	// NETWORKING STUFF
 	a3NetworkMode activeMode = CONFIG;
 	a3GameSelection activeGame;
-	a3KeyboardInput keyboardInput = a3KeyboardInput(keyboard);
+	a3KeyboardInput keyboardInput;
 	a3Peer* pPeer;
 	a3_Timer renderTimer[1];
 
