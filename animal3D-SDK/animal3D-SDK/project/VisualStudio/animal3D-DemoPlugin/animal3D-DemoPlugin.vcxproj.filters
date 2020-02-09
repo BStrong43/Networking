@@ -122,8 +122,8 @@
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\_utilities\a3_DemoShaderProgram.h">
       <Filter>Header Files\A3_DEMO\_utilities</Filter>
     </ClInclude>
-    <ClInclude Include="a3Peer.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3Peer.h">
+      <Filter>Header Files\A3_DEMO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
