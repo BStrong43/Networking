@@ -10,6 +10,8 @@ enum a3GameSelection
 {
 	UNCHOSEN = -1,
 	TICTACTOE,
+	CHECKERS,
+	MANCALA,
 	BATTLESHIP,
 	NUM_SELCTIONS
 };

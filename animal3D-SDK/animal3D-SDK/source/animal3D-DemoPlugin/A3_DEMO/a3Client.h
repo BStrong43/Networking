@@ -16,6 +16,8 @@ public:
 	void update(a3_DemoState* pDemoState) override;
 	void render(a3_DemoState* pDemoState) override;
 
+	void startup(a3_DemoState* pDemoState);
+
 private:
 	// testing
 	bool isChatting = false;

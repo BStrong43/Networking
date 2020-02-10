@@ -65,19 +65,32 @@ void a3Client::update(a3_DemoState* pDemoState)
 		break;
 
 	case PLAYER_SELECT:
+		//Select Game
+		if (true)
+			pDemoState->activeGame = TICTACTOE;
+		else
+			pDemoState->activeGame = MANCALA;//Enum contains all 4, dont have to do mancala
 
+		//Connect to server
+		pDemoState->pPeer->startup(/*isServer = */false);
+
+		if (/*connected ==*/true)
+		{
+			pDemoState->activeMode = LOBBY;
+		}
 		break;
 
 	case LOBBY:
-
+		//Wait for game to start
+		//Open chat room
 		break;
 
 	case SPECTATING:
-
+		//Receive gamestate updates from server
 		break;
 
 	case CHALLENGING:
-
+		//send and receive game state updates
 		break;
 
 	case END_GAME:

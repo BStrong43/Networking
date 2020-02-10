@@ -25,6 +25,9 @@ public:
 	virtual void networking(a3_DemoState* pDemoState) = 0;
 	virtual void update(a3_DemoState* pDemoState) = 0;
 	virtual void render(a3_DemoState* pDemoState) = 0;
+
+	void startup(bool isServer);
+
 protected:
 	a3Peer();
 
