@@ -9,7 +9,13 @@ const int PACKET_MAX_BYTES = 510;
 enum GameMessageId
 {
 	INVALID = -1,
-	TEST
+	TEST,
+	CLIENT_HELLO,
+	GAME_START,
+	CHAT_REQUEST,
+	CHAT_RECIEVE,
+	TICTACTOE_MOVE,
+	GAME_END
 };
 
 struct Packet
