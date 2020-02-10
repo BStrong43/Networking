@@ -55,7 +55,34 @@ void a3Client::networking(a3_DemoState* pDemoState)
 
 void a3Client::update(a3_DemoState* pDemoState)
 {
+	switch (pDemoState->activeMode)
+	{
+	case CONFIG:
+		break;
 
+	case PLAYER_SELECT:
+
+		break;
+
+	case LOBBY:
+
+		break;
+
+	case SPECTATING:
+
+		break;
+
+	case CHALLENGING:
+
+		break;
+
+	case END_GAME:
+		
+		break;
+
+	default:
+		break;
+	}
 }
 
 void a3Client::render(a3_DemoState* pDemoState)

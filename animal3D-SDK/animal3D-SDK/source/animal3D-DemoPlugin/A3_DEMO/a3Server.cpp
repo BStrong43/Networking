@@ -52,7 +52,35 @@ void a3Server::networking(a3_DemoState* pDemoState)
 
 void a3Server::update(a3_DemoState* pDemoState)
 {
+	switch (pDemoState->activeMode)
+	{
+	case CONFIG:
 
+		break;
+
+	case PLAYER_SELECT:
+
+		break;
+
+	case LOBBY:
+
+		break;
+
+	case SPECTATING:
+
+		break;
+
+	case CHALLENGING:
+
+		break;
+
+	case END_GAME:
+
+		break;
+
+	default:
+		break;
+	}
 }
 
 void a3Server::render(a3_DemoState* pDemoState)
