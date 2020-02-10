@@ -58,6 +58,10 @@ void a3Client::update(a3_DemoState* pDemoState)
 	switch (pDemoState->activeMode)
 	{
 	case CONFIG:
+		a3textdraw(pDemoState->text,
+			//near center plane
+			0, 0.2f, -1,
+			0, 1, 0, 1, "Enter Username: ");
 		break;
 
 	case PLAYER_SELECT:
