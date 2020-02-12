@@ -2,7 +2,7 @@
 #define A3_PEER_H
 
 #include "RakNet/RakPeerInterface.h"
-#include "A3_DEMO/a3NetworkDemoState.h"
+
 const int MAX_USERNAME_LEN = 16;
 const int MAX_NUM_CLIENTS = 10;
 

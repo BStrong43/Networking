@@ -1,6 +1,8 @@
 #include "a3Peer.h"
 #include "a3Client.h"
 #include "a3Server.h"
+#include "a3NetworkDemoState.h"
+
 a3Peer::a3Peer()
 {
 	pRakPeer = RakNet::RakPeerInterface::GetInstance();
