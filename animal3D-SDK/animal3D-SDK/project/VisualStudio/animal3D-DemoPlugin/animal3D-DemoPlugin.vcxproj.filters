@@ -131,6 +131,15 @@
     <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_NetworkingManager.h">
       <Filter>Header Files\A3_DEMO\a3_Networking</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_NetworkInboundEvent.h">
+      <Filter>Header Files\A3_DEMO\a3_Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_NetworkOutboundEvent.h">
+      <Filter>Header Files\A3_DEMO\a3_Networking</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoPlugin\A3_DEMO\a3_NetworkEventManager.h">
+      <Filter>Header Files\A3_DEMO\a3_Networking</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\resource\glsl\4x\fs\drawColorAttrib_fs4x.glsl">
