@@ -10,7 +10,7 @@ private:
 	a3_NetworkTestEventData mData;
 public:
 	a3_NetworkTestOutboundEvent(a3_NetworkTestEventData& data);
-	void writeToOutboundEvent(RakNet::BitStream& toBitStream) override;
+	void writeToBitStream(RakNet::BitStream& toBitStream) override;
 };
 
 #endif

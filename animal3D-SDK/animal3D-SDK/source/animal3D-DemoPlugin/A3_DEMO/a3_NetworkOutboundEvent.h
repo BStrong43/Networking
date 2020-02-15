@@ -10,7 +10,7 @@ protected:
 	a3_NetworkOutboundEvent(a3_NetGameMessages id)
 		:a3_NetworkEvent(id) {}
 public:
-	virtual void writeToOutboundEvent(RakNet::BitStream& toBitStream)
+	virtual void writeToBitStream(RakNet::BitStream& toBitStream)
 	{
 		toBitStream.Write(mId);
 	}

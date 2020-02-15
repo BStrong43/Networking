@@ -12,10 +12,10 @@ private:
 	std::queue<a3_NetworkOutboundEvent*> outboundEventQueue;
 public:
 	void enqueueInboundEvent(a3_NetworkInboundEvent* inboundEvent);
-	a3_NetworkInboundEvent* dequeueInboundEvent();
+	size_t executeAllInbound();
 
-	void enqueueOutboundEvent(a3_NetworkInboundEvent* inboundEvent);
-	a3_NetworkOutboundEvent* dequeueOutboundEvent();
+	void enqueueOutboundEvent(a3_NetworkOutboundEvent* outboundEvent);
+	size_t dequeueAllOutboundToBitStream(RakNet::BitStream& toBitStream);
 };
 
 #endif

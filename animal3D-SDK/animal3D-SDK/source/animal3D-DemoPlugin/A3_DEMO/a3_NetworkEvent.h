@@ -11,6 +11,8 @@ protected:
 	a3_NetworkEvent(a3_NetGameMessages id)
 		:mId(id) {}
 public:
+	virtual ~a3_NetworkEvent() = default;
+	
 	a3_NetGameMessages getId() const { return mId; }
 };
 

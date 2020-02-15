@@ -7,7 +7,7 @@ a3_NetworkTestOutboundEvent::a3_NetworkTestOutboundEvent(a3_NetworkTestEventData
 	mData = data;
 }
 
-void a3_NetworkTestOutboundEvent::writeToOutboundEvent(RakNet::BitStream& toBitStream)
+void a3_NetworkTestOutboundEvent::writeToBitStream(RakNet::BitStream& toBitStream)
 {
 	toBitStream.Write(mData.test);
 }
