@@ -30,19 +30,16 @@
 #include "RakNet/RakNetTypes.h"
 #include "RakNet/BitStream.h"
 #include "RakNet/GetTime.h"
+#include "A3_DEMO/a3_NetGameMessages.h"
 
 
 //-----------------------------------------------------------------------------
 // networking stuff
 
-enum a3_NetGameMessages
-{
-	ID_CUSTOM_MESSAGE_START = ID_USER_PACKET_ENUM,
-
-	ID_GAME_MESSAGE_1,
-};
+// moved a3_NetGameMessages to it's own header
 
 
+// did not see a place for this in the architecture for lab3
 #pragma pack(push, 1)
 
 struct a3_NetGameMessageData

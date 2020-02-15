@@ -1,17 +1,19 @@
 #ifndef __ANIMAL3D_NETWORKOUTBOUNDEVENT_H
 #define __ANIMAL3D_NETWORKOUTBOUNDEVENT_H
 
+#include "a3_NetworkEvent.h"
 #include "RakNet/BitStream.h"
 
-class a3_NetworkOutboundEvent
+class a3_NetworkOutboundEvent : public a3_NetworkEvent
 {
 protected:
-	// TODO: move enum to header so it can be included
-	a3_NetGameMessages messageId;
-
-	a3_NetworkOutboundEvent(a3_NetGameMessages id);
+	a3_NetworkOutboundEvent(a3_NetGameMessages id)
+		:a3_NetworkEvent(id) {}
 public:
-	virtual void writeToOutboundEvent(RakNet::BitStream& toBitStream) = 0;
+	virtual void writeToOutboundEvent(RakNet::BitStream& toBitStream)
+	{
+		toBitStream.Write(mId);
+	}
 };
 
 #endif
