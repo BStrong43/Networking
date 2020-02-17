@@ -219,6 +219,24 @@ a3i32 a3netProcessInbound(a3_NetworkingManager* net)
 					}
 					break;
 
+				case ID_GAME_MESSAGE_2:
+					printf("DEBUG MESSAGE: received packet ID_GAME_MESSAGE_2.\n");
+					{
+						RakNet::RakString rs;
+						bs_in.Read(rs);
+						printf("%s\n", rs.C_String());
+					}
+					break;
+
+				case ID_GAME_MESSAGE_3:
+					printf("DEBUG MESSAGE: received packet ID_GAME_MESSAGE_3.\n");
+					{
+						RakNet::RakString rs;
+						bs_in.Read(rs);
+						printf("%s\n", rs.C_String());
+					}
+					break;
+
 				default:
 					printf("Message with identifier %i has arrived.\n", msg);
 					break;

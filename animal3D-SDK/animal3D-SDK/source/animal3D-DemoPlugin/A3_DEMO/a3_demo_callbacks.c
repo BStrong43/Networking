@@ -52,12 +52,14 @@ void a3demo_startNetworking(a3_DemoState* demoState, a3boolean const isServer)
 	{
 		if (a3netStartup(demoState->net, port_server, 0, maxConnections_server, 0) > 0)
 			printf("\n STARTED NETWORKING AS SERVER \n");
+		demoState->uiInt = 0;
 	}
 	else
 	{
 		if (a3netStartup(demoState->net, 0, port_server, 0, maxConnections_client) > 0)
 			if (a3netConnect(demoState->net, ipAddress) > 0)
 				printf("\n STARTED NETWORKING AS CLIENT \n");
+		demoState->uiInt = 0;
 	}
 }
 
@@ -67,7 +69,6 @@ void a3demo_stopNetworking(a3_DemoState* demoState)
 		if (a3netShutdown(demoState->net) > 0)
 			printf("\n SHUT DOWN NETWORKING \n");
 }
-
 
 //-----------------------------------------------------------------------------
 // miscellaneous functions
@@ -458,11 +459,37 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		// start networking as server
 	case '1':
 		a3demo_startNetworking(demoState, 1);
+		demoState->net->isServer = true;
 		break;
 
 		// start networking as client
 	case '2':
 		a3demo_startNetworking(demoState, 0);
+		demoState->net->isServer = false;
+		break;
+
+	case '3':
+		//ID_1
+		if (!demoState->net->isServer)
+		{
+			
+		}
+		break;
+
+	case '4':
+		//ID_2
+		if (!demoState->net->isServer)
+		{
+
+		}
+		break;
+
+	case '5':
+		//ID_3
+		if (!demoState->net->isServer)
+		{
+
+		}
 		break;
 
 

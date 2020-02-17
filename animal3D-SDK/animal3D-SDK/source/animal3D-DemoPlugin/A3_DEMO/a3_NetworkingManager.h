@@ -30,7 +30,7 @@
 // animal3D framework includes
 
 #include "animal3D/animal3D.h"
-
+//#include "a3_NetworkEventManager.h"
 
 //-----------------------------------------------------------------------------
 
@@ -49,6 +49,7 @@ extern "C"
 	// networking manager
 	struct a3_NetworkingManager
 	{
+		a3boolean isServer;
 		a3ui16 port_inbound, port_outbound;
 		a3ui16 maxConnect_inbound, maxConnect_outbound;
 		void* peer;
@@ -77,7 +78,7 @@ extern "C"
 	// process outbound packets
 	a3i32 a3netProcessOutbound(a3_NetworkingManager* net);
 
-
+	void createOutboundPacket(a3_NetworkingManager netMan, a3i32 packType);
 //-----------------------------------------------------------------------------
 
 

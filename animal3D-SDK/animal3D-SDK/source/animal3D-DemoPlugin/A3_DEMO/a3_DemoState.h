@@ -44,7 +44,7 @@
 #include "_utilities/a3_DemoShaderProgram.h"
 
 #include "a3_NetworkingManager.h"
-
+//#include "a3_NetworkEventManager.h"
 
 //-----------------------------------------------------------------------------
 
@@ -155,8 +155,9 @@ extern "C"
 
 
 		// networking
+		
 		a3_NetworkingManager net[1];
-
+		a3ui32 uiInt;
 
 		//---------------------------------------------------------------------
 		// object arrays: organized as anonymous unions for two reasons: 
