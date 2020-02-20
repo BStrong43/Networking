@@ -129,11 +129,11 @@ a3i32 a3netDisconnect(a3_NetworkingManager* net)
 
 
 // process inbound packets
-a3i32 a3netProcessInbound(a3_NetworkingManager* net)
+a3i32 a3netProcessInbound(a3_DemoState* demoState)
 {
-	if (net && net->peer)
+	if (demoState->net && demoState->net->peer)
 	{
-		RakNet::RakPeerInterface* peer = (RakNet::RakPeerInterface*)net->peer;
+		RakNet::RakPeerInterface* peer = (RakNet::RakPeerInterface*)demoState->net->peer;
 		RakNet::Packet* packet;
 		RakNet::MessageID msg;
 		a3i32 count = 0;
@@ -194,7 +194,7 @@ a3i32 a3netProcessInbound(a3_NetworkingManager* net)
 					printf("The server is full.\n");
 					break;
 				case ID_DISCONNECTION_NOTIFICATION:
-					if (net->maxConnect_outbound) {
+					if (demoState->net->maxConnect_outbound) {
 						printf("A client has disconnected.\n");
 					}
 					else {
@@ -202,7 +202,7 @@ a3i32 a3netProcessInbound(a3_NetworkingManager* net)
 					}
 					break;
 				case ID_CONNECTION_LOST:
-					if (net->maxConnect_outbound) {
+					if (demoState->net->maxConnect_outbound) {
 						printf("A client lost the connection.\n");
 					}
 					else {
@@ -213,27 +213,40 @@ a3i32 a3netProcessInbound(a3_NetworkingManager* net)
 				case ID_GAME_MESSAGE_1:
 					printf("DEBUG MESSAGE: received packet ID_GAME_MESSAGE_1.\n");
 					{
-						RakNet::RakString rs;
-						bs_in.Read(rs);
-						printf("%s\n", rs.C_String());
+						//net->eventMan.enqueueInboundEvent(a3_NetworkInboundEvent(bs_in));
+						demoState->uiInt += 10;
+						if (demoState->net->isServer)
+						{
+							RakNet::BitStream bsOut[1];
+							bsOut->Write((RakNet::MessageID)ID_GAME_MESSAGE_1);
+							peer->Send(bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+						}
 					}
 					break;
 
 				case ID_GAME_MESSAGE_2:
 					printf("DEBUG MESSAGE: received packet ID_GAME_MESSAGE_2.\n");
 					{
-						RakNet::RakString rs;
-						bs_in.Read(rs);
-						printf("%s\n", rs.C_String());
+						demoState->uiInt -= 10;
+						if (demoState->net->isServer)
+						{
+							RakNet::BitStream bsOut[1];
+							bsOut->Write((RakNet::MessageID)ID_GAME_MESSAGE_2);
+							peer->Send(bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+						}
 					}
 					break;
 
 				case ID_GAME_MESSAGE_3:
 					printf("DEBUG MESSAGE: received packet ID_GAME_MESSAGE_3.\n");
 					{
-						RakNet::RakString rs;
-						bs_in.Read(rs);
-						printf("%s\n", rs.C_String());
+						demoState->uiInt += 5;
+						if (demoState->net->isServer)
+						{
+							RakNet::BitStream bsOut[1];
+							bsOut->Write((RakNet::MessageID)ID_GAME_MESSAGE_3);
+							peer->Send(bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false);
+						}
 					}
 					break;
 
@@ -254,10 +267,28 @@ a3i32 a3netProcessOutbound(a3_NetworkingManager* net)
 {
 	if (net && net->peer)
 	{
-
+		
 	}
 	return 0;
 }
 
+void createOutboundPacket(a3_NetworkingManager* netMan, a3i32 packType)
+{
+	switch (packType)
+	{
+	default:
+	case 0:
+		netMan->eventMan.enqueueOutboundEvent(new a3_NetworkOutboundEvent(ID_GAME_MESSAGE_1));
+		break;
 
+	case 1:
+		netMan->eventMan.enqueueOutboundEvent(new a3_NetworkOutboundEvent(ID_GAME_MESSAGE_1));
+		break;
+
+	case 2:
+		netMan->eventMan.enqueueOutboundEvent(new a3_NetworkOutboundEvent(ID_GAME_MESSAGE_1));
+		break;
+	}
+
+}
 //-----------------------------------------------------------------------------

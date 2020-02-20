@@ -40,6 +40,5 @@ size_t a3_NetworkEventManager::dequeueAllOutboundToBitStream(RakNet::BitStream& 
 		outboundEvent = nullptr;
 		++numDequeued;
 	}
-
 	return numDequeued;
 }

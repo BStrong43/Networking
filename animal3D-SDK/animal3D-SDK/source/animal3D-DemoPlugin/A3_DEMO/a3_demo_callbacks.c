@@ -42,7 +42,7 @@
 
 void a3demo_startNetworking(a3_DemoState* demoState, a3boolean const isServer)
 {
-	a3netAddressStr const ipAddress = "216.93.149.186";//Dan's in class IP: 216.93.149.186
+	a3netAddressStr const ipAddress = "127.0.0.1";//Dan's in class IP: 216.93.149.186
 	a3ui16 const port_server = 60006;
 	a3ui16 const port_client = 60005;
 	a3ui16 const maxConnections_server = 16;
@@ -320,7 +320,7 @@ A3DYLIBSYMBOL a3i32 a3demoCB_idle(a3_DemoState *demoState)
 		{
 			// render timer ticked, update demo state and draw
 			a3demo_input(demoState, demoState->renderTimer->secondsPerTick);
-			a3netProcessInbound(demoState->net);
+			a3netProcessInbound(demoState);
 			a3demo_update(demoState, demoState->renderTimer->secondsPerTick);
 			a3netProcessOutbound(demoState->net);
 			a3demo_render(demoState);
@@ -454,6 +454,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		// stop networking
 	case '0':
 		a3demo_stopNetworking(demoState);
+
 		break;
 
 		// start networking as server
@@ -472,7 +473,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		//ID_1
 		if (!demoState->net->isServer)
 		{
-			
+			createOutboundPacket(demoState->net, 0);
 		}
 		break;
 
@@ -480,7 +481,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		//ID_2
 		if (!demoState->net->isServer)
 		{
-
+			createOutboundPacket(demoState->net, 1);
 		}
 		break;
 
@@ -488,7 +489,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		//ID_3
 		if (!demoState->net->isServer)
 		{
-
+			createOutboundPacket(demoState->net, 2);
 		}
 		break;
 

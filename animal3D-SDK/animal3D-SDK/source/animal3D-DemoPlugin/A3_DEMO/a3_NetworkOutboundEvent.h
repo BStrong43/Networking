@@ -6,10 +6,10 @@
 
 class a3_NetworkOutboundEvent : public a3_NetworkEvent
 {
-protected:
+public:
 	a3_NetworkOutboundEvent(a3_NetGameMessages id)
 		:a3_NetworkEvent(id) {}
-public:
+
 	virtual void writeToBitStream(RakNet::BitStream& toBitStream)
 	{
 		toBitStream.Write(mId);

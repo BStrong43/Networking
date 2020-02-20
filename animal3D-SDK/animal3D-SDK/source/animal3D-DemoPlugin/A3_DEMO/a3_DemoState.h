@@ -157,6 +157,7 @@ extern "C"
 		// networking
 		
 		a3_NetworkingManager net[1];
+		a3boolean isNetworked;
 		a3ui32 uiInt;
 
 		//---------------------------------------------------------------------

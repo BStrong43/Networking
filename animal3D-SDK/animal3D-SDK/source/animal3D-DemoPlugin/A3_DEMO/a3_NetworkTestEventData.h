@@ -3,7 +3,7 @@
 
 struct a3_NetworkTestEventData
 {
-	int test;
+	int increment;
 };
 
 #endif

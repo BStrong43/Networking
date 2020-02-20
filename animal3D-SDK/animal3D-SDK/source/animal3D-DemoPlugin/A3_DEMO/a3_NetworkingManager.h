@@ -30,8 +30,10 @@
 // animal3D framework includes
 
 #include "animal3D/animal3D.h"
+#include "a3_DemoState.h"
+#include "A3_DEMO/a3_NetworkEventManager.h"
+#include "A3_DEMO/a3_NetworkTestEventData.h"
 //#include "a3_NetworkEventManager.h"
-
 //-----------------------------------------------------------------------------
 
 #ifdef __cplusplus
@@ -53,6 +55,7 @@ extern "C"
 		a3ui16 port_inbound, port_outbound;
 		a3ui16 maxConnect_inbound, maxConnect_outbound;
 		void* peer;
+		a3_NetworkEventManager eventMan;
 	};
 
 
@@ -73,12 +76,12 @@ extern "C"
 
 
 	// process inbound packets
-	a3i32 a3netProcessInbound(a3_NetworkingManager* net);
+	a3i32 a3netProcessInbound(a3_DemoState* demoState);
 
 	// process outbound packets
 	a3i32 a3netProcessOutbound(a3_NetworkingManager* net);
 
-	void createOutboundPacket(a3_NetworkingManager netMan, a3i32 packType);
+	void createOutboundPacket(a3_NetworkingManager* netMan, a3i32 packType);
 //-----------------------------------------------------------------------------
 
 
